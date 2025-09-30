@@ -35,19 +35,44 @@ const db = new sqlite3.Database(dbPath, (err) => {
             quiz_score TEXT DEFAULT 'Not taken',
             created_by TEXT DEFAULT 'Unknown'
         )`, (err) => {
-            if (err) console.error("Error creating table", err);
-        });
-        
-        // Add new columns if they don't exist (for existing databases)
-        db.run(`ALTER TABLE staff ADD COLUMN email TEXT`, (err) => {
-            if (err && !err.message.includes('duplicate column name')) {
-                console.error("Error adding email column", err);
-            }
-        });
-        
-        db.run(`ALTER TABLE staff ADD COLUMN created_by TEXT DEFAULT 'Unknown'`, (err) => {
-            if (err && !err.message.includes('duplicate column name')) {
-                console.error("Error adding created_by column", err);
+            if (err) {
+                console.error("Error creating table", err);
+            } else {
+                console.log("Staff table created/verified successfully");
+                
+                // Only try to add columns if table already existed (for existing databases)
+                // Check if email column exists
+                db.all("PRAGMA table_info(staff)", (err, columns) => {
+                    if (err) {
+                        console.error("Error checking table structure", err);
+                        return;
+                    }
+                    
+                    const hasEmail = columns.some(col => col.name === 'email');
+                    const hasCreatedBy = columns.some(col => col.name === 'created_by');
+                    
+                    // Add email column if it doesn't exist
+                    if (!hasEmail) {
+                        db.run(`ALTER TABLE staff ADD COLUMN email TEXT`, (err) => {
+                            if (err) {
+                                console.error("Error adding email column", err);
+                            } else {
+                                console.log("Added email column to existing table");
+                            }
+                        });
+                    }
+                    
+                    // Add created_by column if it doesn't exist
+                    if (!hasCreatedBy) {
+                        db.run(`ALTER TABLE staff ADD COLUMN created_by TEXT DEFAULT 'Unknown'`, (err) => {
+                            if (err) {
+                                console.error("Error adding created_by column", err);
+                            } else {
+                                console.log("Added created_by column to existing table");
+                            }
+                        });
+                    }
+                });
             }
         });
     }
