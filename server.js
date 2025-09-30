@@ -1,90 +1,64 @@
-// =======================
-// YATRI BACKEND SERVER
-// =======================
+// ===================================================
+// YATRI BACKEND SERVER (MIGRATED TO POSTGRESQL)
+// ===================================================
 
 const express = require('express');
-const sqlite3 = require('sqlite3').verbose();
 const cors = require('cors');
 const bcrypt = require('bcrypt');
+const { Pool } = require('pg'); // <-- Replaced sqlite3 with pg
+const path = require('path'); // <-- Added for serving files
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const saltRounds = 10; // For password hashing
+const saltRounds = 10;
 
-
-// Middleware
+// --- Middleware ---
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public'));
 
-// --- Database Setup ---
-const dbPath = process.env.NODE_ENV === 'production' ? '/tmp/yatri_data.db' : './yatri_data.db';
-const db = new sqlite3.Database(dbPath, (err) => {
-    if (err) {
-        console.error("Error opening database", err.message);
-    } else {
-        console.log("Connected to the SQLite database.");
-        // ** REVERTED **: The insecure 'plain_password' column has been removed.
-        db.run(`CREATE TABLE IF NOT EXISTS staff (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            staff_id TEXT NOT NULL UNIQUE,
-            email TEXT,
-            password TEXT NOT NULL,
-            progress TEXT DEFAULT '{}',
-            quiz_score TEXT DEFAULT 'Not taken',
-            created_by TEXT DEFAULT 'Unknown'
-        )`, (err) => {
-            if (err) {
-                console.error("Error creating table", err);
-            } else {
-                console.log("Staff table created/verified successfully");
-                
-                // Only try to add columns if table already existed (for existing databases)
-                // Check if email column exists
-                db.all("PRAGMA table_info(staff)", (err, columns) => {
-                    if (err) {
-                        console.error("Error checking table structure", err);
-                        return;
-                    }
-                    
-                    const hasEmail = columns.some(col => col.name === 'email');
-                    const hasCreatedBy = columns.some(col => col.name === 'created_by');
-                    
-                    // Add email column if it doesn't exist
-                    if (!hasEmail) {
-                        db.run(`ALTER TABLE staff ADD COLUMN email TEXT`, (err) => {
-                            if (err) {
-                                console.error("Error adding email column", err);
-                            } else {
-                                console.log("Added email column to existing table");
-                            }
-                        });
-                    }
-                    
-                    // Add created_by column if it doesn't exist
-                    if (!hasCreatedBy) {
-                        db.run(`ALTER TABLE staff ADD COLUMN created_by TEXT DEFAULT 'Unknown'`, (err) => {
-                            if (err) {
-                                console.error("Error adding created_by column", err);
-                            } else {
-                                console.log("Added created_by column to existing table");
-                            }
-                        });
-                    }
-                });
-            }
-        });
+// This will serve your index.html, CSS, and images from the root directory
+app.use(express.static(path.join(__dirname)));
+
+// --- Database Setup (PostgreSQL) ---
+// The Pool will automatically use the DATABASE_URL environment variable on Render
+const db = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    // This is required for connecting to Render's free tier database
+    ssl: {
+        rejectUnauthorized: false
     }
 });
+
+// Function to create the table if it doesn't exist
+async function initializeDatabase() {
+    try {
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS staff (
+                id SERIAL PRIMARY KEY,
+                name TEXT NOT NULL,
+                staff_id TEXT NOT NULL UNIQUE,
+                email TEXT,
+                password TEXT NOT NULL,
+                progress JSONB DEFAULT '{}',
+                quiz_score TEXT DEFAULT 'Not taken',
+                created_by TEXT DEFAULT 'Unknown'
+            )`);
+        console.log("Successfully connected to PostgreSQL. 'staff' table is ready.");
+    } catch (err) {
+        console.error("Error initializing database table:", err);
+    }
+}
+initializeDatabase();
+
 
 // =======================
 // API ENDPOINTS
 // =======================
 
-// --- Admin Login ---
+// --- Admin Login (No database interaction, no changes needed) ---
 app.post('/api/admin/login', (req, res) => {
     const { adminId, password } = req.body;
+    // In a real application, these should also be environment variables
     const isAdmin1 = adminId === 'pratham' && password === 'Yatriwest';
     const isAdmin2 = adminId === 'ketal' && password === 'Yatri@euston';
 
@@ -96,111 +70,117 @@ app.post('/api/admin/login', (req, res) => {
 });
 
 // --- Staff Login ---
-app.post('/api/staff/login', (req, res) => {
+app.post('/api/staff/login', async (req, res) => {
     const { staffId, password } = req.body;
-    db.get('SELECT * FROM staff WHERE staff_id = ?', [staffId], (err, user) => {
-        if (err || !user) {
+    try {
+        const result = await db.query('SELECT * FROM staff WHERE staff_id = $1', [staffId]);
+        const user = result.rows[0];
+
+        if (!user) {
             return res.status(401).json({ success: false, message: 'Invalid Staff ID or password.' });
         }
-        bcrypt.compare(password, user.password, (err, result) => {
-            if (result) {
-                const { password, ...userData } = user; // Exclude password from response
-                res.json({ success: true, user: userData });
-            } else {
-                res.status(401).json({ success: false, message: 'Invalid Staff ID or password.' });
-            }
-        });
-    });
+
+        const match = await bcrypt.compare(password, user.password);
+
+        if (match) {
+            const { password, ...userData } = user; // Exclude password from response
+            res.json({ success: true, user: userData });
+        } else {
+            res.status(401).json({ success: false, message: 'Invalid Staff ID or password.' });
+        }
+    } catch (err) {
+        console.error("Login Error:", err);
+        res.status(500).json({ error: "Server error during login." });
+    }
 });
 
 // --- Get All Staff (for Admin Dashboard) ---
-app.get('/api/staff', (req, res) => {
-    // ** REVERTED **: No longer sends any password info to the admin dashboard.
-    db.all('SELECT id, name, staff_id, email, progress, quiz_score, created_by FROM staff', [], (err, rows) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
-        res.json(rows);
-    });
+app.get('/api/staff', async (req, res) => {
+    try {
+        const result = await db.query('SELECT id, name, staff_id, email, progress, quiz_score, created_by FROM staff');
+        res.json(result.rows);
+    } catch (err) {
+        console.error("Get All Staff Error:", err);
+        res.status(500).json({ error: err.message });
+    }
 });
 
 // --- Create New Staff ---
-app.post('/api/staff', (req, res) => {
+app.post('/api/staff', async (req, res) => {
     const { name, staff_id, email, password, adminId } = req.body;
-    bcrypt.hash(password, saltRounds, (err, hash) => {
-        if (err) {
-            return res.status(500).json({ error: 'Error hashing password' });
+    try {
+        const hash = await bcrypt.hash(password, saltRounds);
+        const sql = 'INSERT INTO staff (name, staff_id, email, password, progress, created_by) VALUES ($1, $2, $3, $4, $5, $6)';
+        await db.query(sql, [name, staff_id, email, hash, '{}', adminId]);
+        res.status(201).json({ success: true });
+    } catch (err) {
+        console.error("Create Staff Error:", err);
+        // Check for unique violation error code from PostgreSQL
+        if (err.code === '23505') {
+            return res.status(400).json({ error: 'Staff ID already exists.' });
         }
-        // ** REVERTED **: Only inserts the hashed password.
-        const sql = 'INSERT INTO staff (name, staff_id, email, password, progress, created_by) VALUES (?, ?, ?, ?, ?, ?)';
-        db.run(sql, [name, staff_id, email, hash, JSON.stringify({}), adminId], function(err) {
-            if (err) {
-                return res.status(400).json({ error: 'Staff ID already exists.' });
-            }
-            res.json({ success: true, id: this.lastID });
-        });
-    });
+        res.status(500).json({ error: 'Error creating staff member.' });
+    }
 });
 
-// --- ** NEW **: Update Staff Information ---
-app.put('/api/staff/:current_staff_id', (req, res) => {
+// --- Update Staff Information ---
+app.put('/api/staff/:current_staff_id', async (req, res) => {
     const { name, staff_id, email, password } = req.body;
     const { current_staff_id } = req.params;
 
-    // If password is being changed, hash it first.
-    if (password) {
-        bcrypt.hash(password, saltRounds, (err, hash) => {
-            if (err) return res.status(500).json({ error: "Error hashing password" });
-            db.run(`UPDATE staff SET name = ?, staff_id = ?, email = ?, password = ? WHERE staff_id = ?`,
-                [name, staff_id, email, hash, current_staff_id], function (err) {
-                if (err) return res.status(400).json({ error: "Staff ID might already be in use." });
-                res.json({ success: true, changes: this.changes });
-            });
-        });
-    } else {
-        // If password is not being changed, update other fields.
-        db.run(`UPDATE staff SET name = ?, staff_id = ?, email = ? WHERE staff_id = ?`,
-            [name, staff_id, email, current_staff_id], function (err) {
-            if (err) return res.status(400).json({ error: "Staff ID might already be in use." });
-            res.json({ success: true, changes: this.changes });
-        });
+    try {
+        if (password) {
+            const hash = await bcrypt.hash(password, saltRounds);
+            await db.query(
+                'UPDATE staff SET name = $1, staff_id = $2, email = $3, password = $4 WHERE staff_id = $5',
+                [name, staff_id, email, hash, current_staff_id]
+            );
+        } else {
+            await db.query(
+                'UPDATE staff SET name = $1, staff_id = $2, email = $3 WHERE staff_id = $4',
+                [name, staff_id, email, current_staff_id]
+            );
+        }
+        res.json({ success: true });
+    } catch (err) {
+        console.error("Update Staff Error:", err);
+        if (err.code === '23505') {
+            return res.status(400).json({ error: 'Staff ID might already be in use.' });
+        }
+        res.status(500).json({ error: 'Error updating staff member.' });
     }
 });
 
-
 // --- Delete Staff ---
-app.delete('/api/staff/:staff_id', (req, res) => {
-    db.run('DELETE FROM staff WHERE staff_id = ?', [req.params.staff_id], function(err) {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
-        res.json({ success: true, changes: this.changes });
-    });
+app.delete('/api/staff/:staff_id', async (req, res) => {
+    try {
+        await db.query('DELETE FROM staff WHERE staff_id = $1', [req.params.staff_id]);
+        res.json({ success: true });
+    } catch (err) {
+        console.error("Delete Staff Error:", err);
+        res.status(500).json({ error: err.message });
+    }
 });
 
 // --- Update Progress / Quiz Score ---
-app.post('/api/progress', (req, res) => {
+app.post('/api/progress', async (req, res) => {
     const { staffId, progress, quizScore } = req.body;
-    let sql, params;
-    if (progress) {
-        sql = 'UPDATE staff SET progress = ? WHERE staff_id = ?';
-        params = [JSON.stringify(progress), staffId];
-    } else if (quizScore) {
-        sql = 'UPDATE staff SET quiz_score = ? WHERE staff_id = ?';
-        params = [quizScore, staffId];
-    } else {
-        return res.status(400).json({ error: 'No progress or quiz score provided.' });
-    }
-    db.run(sql, params, function(err) {
-        if (err) {
-            return res.status(500).json({ error: err.message });
+    try {
+        if (progress) {
+            await db.query('UPDATE staff SET progress = $1 WHERE staff_id = $2', [progress, staffId]);
+        } else if (quizScore) {
+            await db.query('UPDATE staff SET quiz_score = $1 WHERE staff_id = $2', [quizScore, staffId]);
+        } else {
+            return res.status(400).json({ error: 'No progress or quiz score provided.' });
         }
         res.json({ success: true });
-    });
+    } catch (err) {
+        console.error("Update Progress Error:", err);
+        res.status(500).json({ error: err.message });
+    }
 });
 
-
-// Start the server
+// --- Server Start ---
 app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
 });
