@@ -16,7 +16,7 @@ const saltRounds = 10;
 app.use(cors());
 app.use(express.json());
 
-// This will serve your index.html, CSS, and images from the root directory
+// This will serve your static files like CSS, images, etc., from the root directory
 app.use(express.static(path.join(__dirname)));
 
 // --- Database Setup (PostgreSQL) ---
@@ -179,6 +179,16 @@ app.post('/api/progress', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
+
+// =======================================================
+// SERVE THE FRONTEND FILE (Catch-All Route)
+// This must be AFTER all your API routes
+// =======================================================
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
 
 // --- Server Start ---
 app.listen(PORT, () => {
