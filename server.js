@@ -129,6 +129,7 @@ app.post('/api/staff/login', async (req, res) => {
 app.get('/api/staff', async (req, res) => {
     try {
         const result = await db.query('SELECT id, name, staff_id, email, progress, quiz_score, created_by FROM staff');
+        console.log(`Retrieved ${result.rows.length} staff members`);
         res.json(result.rows);
     } catch (err) {
         console.error('Get staff error:', err);
@@ -140,6 +141,8 @@ app.get('/api/staff', async (req, res) => {
 app.post('/api/staff', async (req, res) => {
     try {
         const { name, staff_id, email, password, adminId } = req.body;
+        console.log(`Creating staff member: ${staff_id} by admin: ${adminId}`);
+        
         const hashedPassword = await bcrypt.hash(password, saltRounds);
         
         const result = await db.query(
@@ -147,9 +150,11 @@ app.post('/api/staff', async (req, res) => {
             [name, staff_id, email, hashedPassword, JSON.stringify({}), adminId]
         );
         
+        console.log(`Staff member created successfully with ID: ${result.rows[0].id}`);
         res.json({ success: true, id: result.rows[0].id });
     } catch (err) {
         if (err.code === '23505') { // Unique constraint violation
+            console.log(`Staff ID ${req.body.staff_id} already exists`);
             res.status(400).json({ error: 'Staff ID already exists.' });
         } else {
             console.error('Create staff error:', err);
