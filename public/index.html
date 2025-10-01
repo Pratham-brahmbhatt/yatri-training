@@ -885,6 +885,80 @@
         backdrop-filter: blur(10px);
     }
     
+    /* Mobile Responsive Styles */
+    @media (max-width: 1024px) {
+        .admin-grid { 
+            grid-template-columns: 1fr; 
+            gap: 20px; 
+        }
+        
+        .admin-section { 
+            padding: 20px; 
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .admin-grid { 
+            grid-template-columns: 1fr; 
+            gap: 15px; 
+        }
+        
+        .admin-section { 
+            padding: 15px; 
+            margin: 10px;
+            border-radius: 12px;
+        }
+        
+        .admin-section h3 {
+            font-size: 1.4em;
+            margin-bottom: 15px;
+        }
+        
+        .admin-section form {
+            margin-bottom: 15px;
+        }
+        
+        .admin-section label {
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+        
+        .admin-section input {
+            padding: 12px;
+            font-size: 16px; /* Prevents zoom on iOS */
+            margin-bottom: 10px;
+        }
+        
+        .admin-section button {
+            padding: 12px 20px;
+            font-size: 14px;
+            width: 100%;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .admin-section { 
+            padding: 12px; 
+            margin: 5px;
+        }
+        
+        .admin-section h3 {
+            font-size: 1.2em;
+            margin-bottom: 12px;
+        }
+        
+        .admin-section input {
+            padding: 10px;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+        
+        .admin-section button {
+            padding: 10px 16px;
+            font-size: 13px;
+        }
+    }
+    
     #staff-progress-table { 
         width: 100%; 
         border-collapse: collapse; 
@@ -944,6 +1018,59 @@
     
     .action-btn.delete { 
         background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    }
+    
+    /* Mobile Responsive Table Styles */
+    @media (max-width: 768px) {
+        #staff-progress-table {
+            font-size: 0.8em;
+            margin-top: 15px;
+        }
+        
+        #staff-progress-table th {
+            padding: 10px 6px;
+            font-size: 0.8em;
+        }
+        
+        #staff-progress-table td {
+            padding: 8px 6px;
+            font-size: 0.75em;
+        }
+        
+        .action-btn {
+            padding: 6px 10px;
+            font-size: 0.75em;
+            margin-right: 4px;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        /* Make table horizontally scrollable on very small screens */
+        .table-container {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        #staff-progress-table {
+            min-width: 600px; /* Ensure table doesn't get too cramped */
+            font-size: 0.75em;
+        }
+        
+        #staff-progress-table th {
+            padding: 8px 4px;
+            font-size: 0.75em;
+        }
+        
+        #staff-progress-table td {
+            padding: 6px 4px;
+            font-size: 0.7em;
+        }
+        
+        .action-btn {
+            padding: 4px 8px;
+            font-size: 0.7em;
+            margin-right: 2px;
+        }
     }
     
     .admin-section input {
@@ -1249,6 +1376,117 @@
         color: #FFD700;
     }
     @media (max-width: 768px) { #welcome-message { display: none; } }
+    
+    /* Mobile Responsive Login Page */
+    @media (max-width: 768px) {
+        .login-container {
+            flex-direction: column;
+            gap: 20px;
+            padding: 20px;
+        }
+        
+        .login-box {
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .login-box h2 {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+        }
+        
+        .login-box input {
+            padding: 12px;
+            font-size: 16px; /* Prevents zoom on iOS */
+            margin-bottom: 10px;
+        }
+        
+        .login-box button {
+            padding: 12px 20px;
+            font-size: 14px;
+            width: 100%;
+        }
+        
+        .logo-container {
+            margin-bottom: 20px;
+        }
+        
+        .logo {
+            max-width: 200px;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .login-container {
+            padding: 15px;
+            gap: 15px;
+        }
+        
+        .login-box {
+            padding: 15px;
+        }
+        
+        .login-box h2 {
+            font-size: 1.3em;
+            margin-bottom: 12px;
+        }
+        
+        .login-box input {
+            padding: 10px;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+        
+        .login-box button {
+            padding: 10px 16px;
+            font-size: 13px;
+        }
+        
+        .logo {
+            max-width: 150px;
+        }
+    }
+    
+    /* Mobile Responsive Header */
+    @media (max-width: 768px) {
+        header {
+            padding: 15px;
+            flex-direction: column;
+            text-align: center;
+            gap: 10px;
+        }
+        
+        header h1 {
+            font-size: 1.5em;
+            margin: 0;
+        }
+        
+        .header-logo {
+            max-width: 120px;
+        }
+        
+        header a {
+            position: static;
+            margin-top: 10px;
+            align-self: center;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        header {
+            padding: 10px;
+        }
+        
+        header h1 {
+            font-size: 1.3em;
+        }
+        
+        .header-logo {
+            max-width: 100px;
+        }
+    }
   </style>
 </head>
 <body>
@@ -2308,7 +2546,7 @@
       </div>
       <div class="admin-section">
         <h3>Manage Staff & Progress <button onclick="populateAdminDashboard()" class="btn" style="margin-left: 10px; padding: 5px 10px; font-size: 12px;">Refresh</button></h3>
-        <div style="overflow-x:auto;">
+        <div class="table-container" style="overflow-x:auto;">
           <table id="staff-progress-table">
             <thead>
               <tr>
