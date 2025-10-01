@@ -168,6 +168,23 @@
         border: 1px solid rgba(255, 215, 0, 0.2);
     }
     
+    /* Mobile Responsive Container */
+    @media (max-width: 768px) {
+        .container {
+            margin: 15px auto;
+            padding: 20px;
+            border-radius: 12px;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .container {
+            margin: 10px auto;
+            padding: 15px;
+            border-radius: 10px;
+        }
+    }
+    
     h2, h3 { 
         margin-top: 0; 
         color: #FFD700; 
@@ -319,6 +336,37 @@
     box-shadow: none;
 }
 
+/* Mobile Responsive Module Hub */
+@media (max-width: 768px) {
+    #module-grid-container {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 16px;
+        margin-top: 20px;
+        padding: 0 10px;
+    }
+    
+    .module-box {
+        padding: 20px 16px;
+        font-size: 1.1em;
+        border-radius: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    #module-grid-container {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin-top: 15px;
+        padding: 0 5px;
+    }
+    
+    .module-box {
+        padding: 16px 12px;
+        font-size: 1em;
+        border-radius: 10px;
+    }
+}
+
     /* --- Styles for Redesigned Professional Welcome Page --- */
     #welcome .container { background-color: transparent; box-shadow: none; padding: 0; }
     .welcome-hero { text-align: center; padding: 40px 20px; background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); border-radius: 16px; border: 1px solid rgba(255, 215, 0, 0.2); }
@@ -340,6 +388,83 @@
     @media (max-width: 768px) {
         .welcome-story, .welcome-story:nth-child(even) { flex-direction: column; }
         .welcome-story-image, .welcome-mission-image { max-width: 100%; }
+        
+        /* Mobile Welcome Page Styles */
+        .welcome-hero {
+            padding: 20px 15px;
+            margin: 10px;
+        }
+        
+        .welcome-hero h2 {
+            font-size: 2em;
+        }
+        
+        .welcome-hero p {
+            font-size: 1.1em;
+        }
+        
+        .welcome-content {
+            padding: 20px 10px;
+            gap: 20px;
+        }
+        
+        .welcome-story, .welcome-mission {
+            flex-direction: column;
+            gap: 15px;
+            text-align: center;
+        }
+        
+        .welcome-story-text, .welcome-mission-text {
+            flex: none;
+        }
+        
+        .welcome-story-image, .welcome-mission-image {
+            flex: none;
+            max-width: 100%;
+            border-radius: 8px;
+        }
+        
+        .values-grid {
+            grid-template-columns: 1fr;
+            gap: 15px;
+            padding: 0 10px;
+        }
+        
+        .value-card {
+            padding: 15px;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .welcome-hero {
+            padding: 15px 10px;
+            margin: 5px;
+        }
+        
+        .welcome-hero h2 {
+            font-size: 1.8em;
+        }
+        
+        .welcome-hero p {
+            font-size: 1em;
+        }
+        
+        .welcome-content {
+            padding: 15px 5px;
+            gap: 15px;
+        }
+        
+        .welcome-story, .welcome-mission {
+            gap: 10px;
+        }
+        
+        .values-grid {
+            padding: 0 5px;
+        }
+        
+        .value-card {
+            padding: 12px;
+        }
     }
 
     /* --- Styles for Redesigned Responsibilities Page --- */
@@ -359,6 +484,69 @@
     .spec-card { background-color: #2a2a2a; padding: 20px; border-radius: 8px; border-top: 4px solid #FFD700; }
     .spec-card h4 { margin-top: 0; color: #FFD700; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    
+    /* Mobile Responsive Responsibilities Page */
+    @media (max-width: 768px) {
+        .responsibilities-intro {
+            margin-bottom: 20px;
+            padding: 0 10px;
+        }
+        
+        .responsibilities-intro h2 {
+            font-size: 2em;
+        }
+        
+        .responsibilities-intro p {
+            font-size: 1em;
+            max-width: 100%;
+        }
+        
+        .tab-buttons {
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        
+        .tab-button {
+            padding: 8px 12px;
+            font-size: 0.9em;
+            flex: 1;
+            min-width: 120px;
+        }
+        
+        .spec-grid {
+            grid-template-columns: 1fr;
+            gap: 15px;
+            padding: 0 10px;
+        }
+        
+        .spec-card {
+            padding: 15px;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .responsibilities-intro {
+            padding: 0 5px;
+        }
+        
+        .responsibilities-intro h2 {
+            font-size: 1.8em;
+        }
+        
+        .tab-button {
+            padding: 6px 8px;
+            font-size: 0.8em;
+            min-width: 100px;
+        }
+        
+        .spec-grid {
+            padding: 0 5px;
+        }
+        
+        .spec-card {
+            padding: 12px;
+        }
+    }
 
     /* --- Styles for Steps of Service Page --- */
     .service-steps-container { padding: 10px; }
@@ -367,6 +555,47 @@
     .step-details h3 { border: none; margin: 0 0 5px 0; padding: 0; font-size: 1.4em; }
     .step-details .action { font-weight: bold; color: #FFFFFF; }
     .step-details .key-points { color: #b0b0b0; }
+    
+    /* Mobile Responsive Service Steps */
+    @media (max-width: 768px) {
+        .service-steps-container {
+            padding: 15px 10px;
+        }
+        
+        .service-step {
+            flex-direction: column;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .step-number {
+            font-size: 2em;
+            margin-right: 0;
+            margin-bottom: 10px;
+        }
+        
+        .step-details h3 {
+            font-size: 1.2em;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .service-steps-container {
+            padding: 10px 5px;
+        }
+        
+        .service-step {
+            margin-bottom: 15px;
+        }
+        
+        .step-number {
+            font-size: 1.8em;
+        }
+        
+        .step-details h3 {
+            font-size: 1.1em;
+        }
+    }
 
     /* --- Styles for Uniform Page --- */
     .uniform-layout { display: flex; gap: 30px; margin-top: 20px; }
@@ -378,8 +607,46 @@
     .uniform-category ul { list-style-type: '✓'; padding-left: 20px; margin-bottom: 0; }
     .uniform-category ul li { padding-left: 10px; margin-bottom: 10px; }
     @media (max-width: 768px) {
-        .uniform-layout { flex-direction: column; }
-        .uniform-image-container { max-width: 100%; }
+        .uniform-layout { 
+            flex-direction: column; 
+            gap: 20px;
+            padding: 0 10px;
+        }
+        .uniform-image-container { 
+            max-width: 100%; 
+        }
+        
+        .uniform-details {
+            padding: 0 10px;
+        }
+        
+        .uniform-category {
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .uniform-category h3 {
+            font-size: 1.2em;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .uniform-layout {
+            padding: 0 5px;
+        }
+        
+        .uniform-details {
+            padding: 0 5px;
+        }
+        
+        .uniform-category {
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+        
+        .uniform-category h3 {
+            font-size: 1.1em;
+        }
     }
 
     /* --- Styles for Allergen Page --- */
@@ -494,7 +761,46 @@
     }
     
     @media (max-width: 800px) {
-        .allergen-main-content, .allergen-columns { flex-direction: column; }
+        .allergen-main-content, .allergen-columns { 
+            flex-direction: column; 
+            gap: 20px;
+            padding: 0 10px;
+        }
+        
+        .allergen-left-col, .allergen-right-col {
+            flex: none;
+        }
+        
+        .allergen-column {
+            gap: 10px;
+        }
+        
+        .allergen-card {
+            padding: 15px;
+        }
+        
+        .emergency-protocol {
+            padding: 15px;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .allergen-main-content, .allergen-columns {
+            padding: 0 5px;
+            gap: 15px;
+        }
+        
+        .allergen-column {
+            gap: 8px;
+        }
+        
+        .allergen-card {
+            padding: 12px;
+        }
+        
+        .emergency-protocol {
+            padding: 12px;
+        }
     }
 
     /* Video Section Styles */
@@ -634,7 +940,44 @@
     .fire-card { background-color: #333; padding: 15px; border-radius: 5px; }
     .fire-card h4 { margin: 0 0 10px 0; color: #FFD700; }
     @media (max-width: 768px) {
-        .safety-grid, .fire-grid { grid-template-columns: 1fr; }
+        .safety-grid, .fire-grid { 
+            grid-template-columns: 1fr; 
+            gap: 15px;
+            padding: 0 10px;
+        }
+        
+        .safety-card, .fire-card {
+            padding: 15px;
+        }
+        
+        .fire-safety-section {
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .fire-safety-section h3 {
+            font-size: 1.4em;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .safety-grid, .fire-grid {
+            padding: 0 5px;
+            gap: 12px;
+        }
+        
+        .safety-card, .fire-card {
+            padding: 12px;
+        }
+        
+        .fire-safety-section {
+            padding: 15px;
+            margin-top: 15px;
+        }
+        
+        .fire-safety-section h3 {
+            font-size: 1.2em;
+        }
     }
 
     /* ---Certificate Styles --- */
@@ -1375,7 +1718,34 @@
     .checklist-item input[type="checkbox"]:checked + label {
         color: #FFD700;
     }
-    @media (max-width: 768px) { #welcome-message { display: none; } }
+    @media (max-width: 768px) { 
+        #welcome-message { display: none; } 
+        
+        /* Mobile Module Navigation */
+        .module-nav {
+            flex-direction: column;
+            gap: 10px;
+            padding: 15px 10px;
+        }
+        
+        .module-nav button {
+            width: 100%;
+            padding: 12px 20px;
+            font-size: 14px;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .module-nav {
+            padding: 10px 5px;
+            gap: 8px;
+        }
+        
+        .module-nav button {
+            padding: 10px 16px;
+            font-size: 13px;
+        }
+    }
     
     /* Mobile Responsive Login Page */
     @media (max-width: 768px) {
