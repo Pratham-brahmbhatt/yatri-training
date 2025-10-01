@@ -2307,7 +2307,7 @@
         <p id="create-user-message"></p>
       </div>
       <div class="admin-section">
-        <h3>Manage Staff & Progress</h3>
+        <h3>Manage Staff & Progress <button onclick="populateAdminDashboard()" class="btn" style="margin-left: 10px; padding: 5px 10px; font-size: 12px;">Refresh</button></h3>
         <div style="overflow-x:auto;">
           <table id="staff-progress-table">
             <thead>
@@ -2604,10 +2604,28 @@
 
     async function populateAdminDashboard() {
         try {
+            console.log('Fetching staff data...');
             currentUsersData = await apiRequest('/api/staff');
+            console.log('Staff data received:', currentUsersData);
+            
             const tableBody = document.getElementById('progress-table-body');
+            if (!tableBody) {
+                console.error('Table body element not found!');
+                return;
+            }
+            
             tableBody.innerHTML = '';
+            
+            if (!currentUsersData || currentUsersData.length === 0) {
+                console.log('No staff data to display');
+                const row = document.createElement('tr');
+                row.innerHTML = '<td colspan="7" style="text-align: center; color: #888;">No staff members found</td>';
+                tableBody.appendChild(row);
+                return;
+            }
+            
             currentUsersData.forEach(user => {
+                console.log('Processing user:', user);
                 const progress = JSON.parse(user.progress || '{}');
                 const completedCount = modules.filter(m => progress[m] === 'completed').length;
                 const progressPercent = Math.round((completedCount / modules.length) * 100);
@@ -2627,7 +2645,15 @@
                     </td>`;
                 tableBody.appendChild(row);
             });
-        } catch (error) { console.error("Failed to populate dashboard:", error); }
+            
+            console.log(`Successfully populated ${currentUsersData.length} staff members`);
+        } catch (error) { 
+            console.error("Failed to populate dashboard:", error);
+            const tableBody = document.getElementById('progress-table-body');
+            if (tableBody) {
+                tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #ff4d4d;">Error loading staff data</td></tr>';
+            }
+        }
     }
     
     function editUser(staffId) {
@@ -2671,6 +2697,33 @@
         if (!currentLoggedInUser) return 0;
         return modules.filter(m => currentLoggedInUser.progress[m] === 'completed').length;
     }
+    
+    // Debug function to test API calls
+    async function debugStaffAPI() {
+        console.log('=== DEBUGGING STAFF API ===');
+        try {
+            console.log('1. Testing health endpoint...');
+            const health = await apiRequest('/api/health');
+            console.log('Health check result:', health);
+            
+            console.log('2. Testing staff endpoint...');
+            const staff = await apiRequest('/api/staff');
+            console.log('Staff data:', staff);
+            console.log('Number of staff members:', staff ? staff.length : 'No data');
+            
+            console.log('3. Testing table element...');
+            const tableBody = document.getElementById('progress-table-body');
+            console.log('Table body element:', tableBody);
+            
+            return { health, staff, tableBody };
+        } catch (error) {
+            console.error('Debug API error:', error);
+            return { error: error.message };
+        }
+    }
+    
+    // Make debug function available globally
+    window.debugStaffAPI = debugStaffAPI;
     
     function renderModuleHub() {
         sessionStorage.removeItem('currentPageIndex'); 
