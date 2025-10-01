@@ -2491,8 +2491,8 @@
         const options = { method, headers: { 'Content-Type': 'application/json' } };
         if (body) { options.body = JSON.stringify(body); }
         try {
-            // This assumes your API server is running on localhost:3000
-            const response = await fetch(`http://localhost:3000${endpoint}`, options);
+            // Use relative URL for production deployment
+            const response = await fetch(`${endpoint}`, options);
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.message || 'An API error occurred');
