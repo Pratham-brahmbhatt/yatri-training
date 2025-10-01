@@ -1302,7 +1302,7 @@
         }
     }
     
-    #staff-progress-table { 
+    #staff-progress-table, #admin-table { 
         width: 100%; 
         border-collapse: collapse; 
         margin-top: 20px; 
@@ -1311,13 +1311,13 @@
         overflow: hidden;
     }
     
-    #staff-progress-table th, #staff-progress-table td { 
+    #staff-progress-table th, #staff-progress-table td, #admin-table th, #admin-table td { 
         border: 1px solid rgba(99, 102, 241, 0.2); 
         padding: 16px; 
         text-align: left; 
     }
     
-    #staff-progress-table th { 
+    #staff-progress-table th, #admin-table th { 
         background: linear-gradient(135deg, rgba(255, 215, 0, 0.8) 0%, rgba(230, 184, 0, 0.8) 100%);
         color: #000000; 
         font-weight: 600;
@@ -1326,7 +1326,7 @@
         font-size: 0.9em;
     }
     
-    #staff-progress-table td { 
+    #staff-progress-table td, #admin-table td { 
         background: rgba(42, 42, 42, 0.5);
         color: #FFD700;
     }
@@ -2934,6 +2934,47 @@
         </div>
       </div>
     </div>
+    
+    <!-- Admin Management Section -->
+    <div class="container admin-grid" style="margin-top: 20px;">
+      <div class="admin-section">
+        <h3>Create New Admin</h3>
+        <form id="create-admin-form">
+          <label for="new-admin-name">Full Name</label>
+          <input type="text" id="new-admin-name" placeholder="Admin Full Name" required>
+          
+          <label for="new-admin-id">Admin ID</label>
+          <input type="text" id="new-admin-id" placeholder="Admin ID (e.g., admin1)" required>
+          
+          <label for="new-admin-email">Email Address</label>
+          <input type="email" id="new-admin-email" placeholder="Email Address" required autocomplete="off">
+          
+          <label for="new-admin-password">Password</label>
+          <input type="password" id="new-admin-password" placeholder="Password" required autocomplete="off">
+          
+          <button type="submit" class="btn">Create Admin</button>
+        </form>
+        <p id="create-admin-message"></p>
+      </div>
+      <div class="admin-section">
+        <h3>Manage Admins <button onclick="populateAdminList()" class="btn" style="margin-left: 10px; padding: 5px 10px; font-size: 12px;">Refresh</button></h3>
+        <div class="table-container" style="overflow-x:auto;">
+          <table id="admin-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Admin ID</th>
+                <th>Email</th>
+                <th>Created By</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   </section>
   <footer><p>&copy; 2025 YATRI Indian Restaurant. All rights reserved.</p></footer>
 
@@ -3149,6 +3190,7 @@
                 currentAdminId = adminIdInput.value; // MODIFIED: Store the admin ID on successful login
                 showView('admin-dashboard');
                 populateAdminDashboard();
+                populateAdminList(); // Load admin list
             }
         } catch (error) {
             console.error("Admin login failed:", error);
@@ -3209,6 +3251,102 @@
         messageEl.style.color = '#ff4d4d';
     }
 });
+
+    // Admin Management Functions
+    document.getElementById('create-admin-form').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const messageEl = document.getElementById('create-admin-message');
+        try {
+            await apiRequest('/api/admins', 'POST', { 
+                name: document.getElementById('new-admin-name').value, 
+                admin_id: document.getElementById('new-admin-id').value, 
+                email: document.getElementById('new-admin-email').value,
+                password: document.getElementById('new-admin-password').value,
+                created_by: currentAdminId
+            });
+            messageEl.textContent = 'Admin created successfully!';
+            messageEl.style.color = '#00ff00';
+            this.reset();
+            populateAdminList();
+        } catch (error) {
+            messageEl.textContent = 'Error: Admin ID might already exist.';
+            messageEl.style.color = '#ff4d4d';
+        }
+    });
+
+    async function populateAdminList() {
+        try {
+            console.log('Fetching admin data...');
+            const admins = await apiRequest('/api/admins');
+            console.log('Admin data received:', admins);
+            
+            const tableBody = document.getElementById('admin-table-body');
+            if (!tableBody) {
+                console.error('Admin table body element not found!');
+                return;
+            }
+            
+            tableBody.innerHTML = '';
+            
+            if (!admins || admins.length === 0) {
+                console.log('No admin data to display');
+                const row = document.createElement('tr');
+                row.innerHTML = '<td colspan="6" style="text-align: center; color: #888;">No admins found</td>';
+                tableBody.appendChild(row);
+                return;
+            }
+            
+            admins.forEach(admin => {
+                console.log('Processing admin:', admin);
+                const row = document.createElement('tr');
+                row.id = `admin-row-${admin.admin_id}`;
+                row.style.backgroundColor = '#2a2a2a';
+                
+                row.innerHTML = `
+                    <td style="color: #FFD700;">${admin.name}</td>
+                    <td style="color: #FFD700;">${admin.admin_id}</td>
+                    <td style="color: #FFD700;">${admin.email || 'N/A'}</td>
+                    <td style="color: #FFD700;">${admin.created_by || 'Unknown'}</td>
+                    <td style="color: #FFD700;">${admin.is_active ? 'Active' : 'Inactive'}</td>
+                    <td class="actions">
+                        <button class="btn action-btn" onclick="toggleAdminStatus('${admin.admin_id}', ${admin.is_active})">${admin.is_active ? 'Deactivate' : 'Activate'}</button>
+                        <button class="btn action-btn delete" onclick="deleteAdmin('${admin.admin_id}')">Delete</button>
+                    </td>`;
+                
+                tableBody.appendChild(row);
+            });
+            
+            console.log(`Successfully populated ${admins.length} admins`);
+        } catch (error) { 
+            console.error("Failed to populate admin list:", error);
+            const tableBody = document.getElementById('admin-table-body');
+            if (tableBody) {
+                tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #ff4d4d;">Error loading admin data</td></tr>';
+            }
+        }
+    }
+
+    async function toggleAdminStatus(adminId, currentStatus) {
+        try {
+            await apiRequest(`/api/admins/${adminId}`, 'PUT', { 
+                is_active: !currentStatus 
+            });
+            populateAdminList();
+        } catch (error) {
+            alert("Error updating admin status: " + error.message);
+        }
+    }
+
+    async function deleteAdmin(adminId) {
+        if (window.confirm(`Are you sure you want to delete admin: ${adminId}?`)) {
+            try {
+                await apiRequest(`/api/admins/${adminId}`, 'DELETE');
+                populateAdminList();
+            } catch (error) {
+                alert("Error deleting admin: " + error.message);
+            }
+        }
+    }
 
     async function populateAdminDashboard() {
         try {
