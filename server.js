@@ -26,7 +26,11 @@ const db = new Pool({
 // Initialize database
 async function initializeDatabase() {
     try {
-        await db.query(`
+        // Test database connection
+        const client = await db.connect();
+        console.log("Successfully connected to PostgreSQL database");
+        
+        await client.query(`
             CREATE TABLE IF NOT EXISTS staff (
                 id SERIAL PRIMARY KEY,
                 name TEXT NOT NULL,
@@ -38,9 +42,11 @@ async function initializeDatabase() {
                 created_by TEXT DEFAULT 'Unknown'
             )
         `);
-        console.log("Connected to PostgreSQL database and table verified.");
+        console.log("Staff table verified/created successfully");
+        client.release();
     } catch (err) {
         console.error("Database initialization error:", err);
+        process.exit(1); // Exit if database connection fails
     }
 }
 
@@ -51,16 +57,46 @@ initializeDatabase();
 // API ENDPOINTS
 // =======================
 
+// --- Health Check ---
+app.get('/api/health', async (req, res) => {
+    try {
+        // Test database connection
+        await db.query('SELECT 1');
+        res.json({ 
+            status: 'healthy', 
+            database: 'connected',
+            environment: process.env.NODE_ENV || 'development',
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('Health check failed:', error);
+        res.status(500).json({ 
+            status: 'unhealthy', 
+            database: 'disconnected',
+            error: error.message 
+        });
+    }
+});
+
 // --- Admin Login ---
 app.post('/api/admin/login', (req, res) => {
-    const { adminId, password } = req.body;
-    const isAdmin1 = adminId === 'pratham' && password === 'Yatriwest';
-    const isAdmin2 = adminId === 'ketal' && password === 'Yatri@euston';
+    try {
+        const { adminId, password } = req.body;
+        console.log(`Admin login attempt: ${adminId}`);
+        
+        const isAdmin1 = adminId === 'pratham' && password === 'Yatriwest';
+        const isAdmin2 = adminId === 'ketal' && password === 'Yatri@euston';
 
-    if (isAdmin1 || isAdmin2) {
-        res.json({ success: true });
-    } else {
-        res.status(401).json({ success: false, message: 'Invalid Admin credentials.' });
+        if (isAdmin1 || isAdmin2) {
+            console.log(`Admin login successful: ${adminId}`);
+            res.json({ success: true });
+        } else {
+            console.log(`Admin login failed: ${adminId}`);
+            res.status(401).json({ success: false, message: 'Invalid Admin credentials.' });
+        }
+    } catch (error) {
+        console.error('Admin login error:', error);
+        res.status(500).json({ success: false, message: 'Server error during login.' });
     }
 });
 
@@ -185,5 +221,7 @@ app.post('/api/progress', async (req, res) => {
 
 // Start the server
 app.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${PORT}`);
+    console.log(`Server running on port ${PORT}`);
+    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`Database URL configured: ${process.env.DATABASE_URL ? 'Yes' : 'No'}`);
 });
