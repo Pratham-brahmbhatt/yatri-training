@@ -42,6 +42,31 @@ async function initializeDatabase() {
                 created_by TEXT DEFAULT 'Unknown'
             )
         `);
+        
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS admins (
+                id SERIAL PRIMARY KEY,
+                admin_id TEXT NOT NULL UNIQUE,
+                name TEXT NOT NULL,
+                email TEXT,
+                password TEXT NOT NULL,
+                created_by TEXT DEFAULT 'System',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                is_active BOOLEAN DEFAULT true
+            )
+        `);
+        
+        // Create default admin if no admins exist
+        const adminCheck = await client.query('SELECT COUNT(*) FROM admins');
+        if (parseInt(adminCheck.rows[0].count) === 0) {
+            console.log('Creating default admin account...');
+            const defaultPassword = await bcrypt.hash('Yatriwest', saltRounds);
+            await client.query(
+                'INSERT INTO admins (admin_id, name, email, password, created_by) VALUES ($1, $2, $3, $4, $5)',
+                ['pratham', 'Pratham', '08prathambarot@gmail.com', defaultPassword, 'System']
+            );
+            console.log('Default admin created: pratham/Yatriwest');
+        }
         console.log("Staff table verified/created successfully");
         client.release();
     } catch (err) {
@@ -106,19 +131,28 @@ app.get('/api/test-db', async (req, res) => {
 });
 
 // --- Admin Login ---
-app.post('/api/admin/login', (req, res) => {
+app.post('/api/admin/login', async (req, res) => {
     try {
         const { adminId, password } = req.body;
         console.log(`Admin login attempt: ${adminId}`);
         
-        const isAdmin1 = adminId === 'pratham' && password === 'Yatriwest';
-        const isAdmin2 = adminId === 'ketal' && password === 'Yatri@euston';
-
-        if (isAdmin1 || isAdmin2) {
+        // Query admin from database
+        const result = await db.query('SELECT * FROM admins WHERE admin_id = $1 AND is_active = true', [adminId]);
+        
+        if (result.rows.length === 0) {
+            console.log(`Admin login failed: ${adminId} not found`);
+            return res.status(401).json({ success: false, message: 'Invalid Admin credentials.' });
+        }
+        
+        const admin = result.rows[0];
+        const isValidPassword = await bcrypt.compare(password, admin.password);
+        
+        if (isValidPassword) {
             console.log(`Admin login successful: ${adminId}`);
-            res.json({ success: true });
+            const { password, ...adminData } = admin; // Exclude password from response
+            res.json({ success: true, admin: adminData });
         } else {
-            console.log(`Admin login failed: ${adminId}`);
+            console.log(`Admin login failed: ${adminId} wrong password`);
             res.status(401).json({ success: false, message: 'Invalid Admin credentials.' });
         }
     } catch (error) {
@@ -314,6 +348,81 @@ app.delete('/api/staff/:staff_id', async (req, res) => {
         res.json({ success: true, changes: result.rowCount });
     } catch (err) {
         console.error('Delete staff error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// --- Get All Admins ---
+app.get('/api/admins', async (req, res) => {
+    try {
+        const result = await db.query('SELECT id, admin_id, name, email, created_by, created_at, is_active FROM admins ORDER BY created_at DESC');
+        console.log(`Retrieved ${result.rows.length} admins`);
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Get admins error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// --- Create New Admin ---
+app.post('/api/admins', async (req, res) => {
+    try {
+        const { admin_id, name, email, password, created_by } = req.body;
+        console.log(`Creating admin: ${admin_id} by: ${created_by}`);
+        
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
+        
+        const result = await db.query(
+            'INSERT INTO admins (admin_id, name, email, password, created_by) VALUES ($1, $2, $3, $4, $5) RETURNING id',
+            [admin_id, name, email, hashedPassword, created_by]
+        );
+        
+        console.log(`Admin created successfully with ID: ${result.rows[0].id}`);
+        res.json({ success: true, id: result.rows[0].id });
+    } catch (err) {
+        if (err.code === '23505') { // Unique constraint violation
+            console.log(`Admin ID ${req.body.admin_id} already exists`);
+            res.status(400).json({ error: 'Admin ID already exists.' });
+        } else {
+            console.error('Create admin error:', err);
+            res.status(500).json({ error: 'Server error.' });
+        }
+    }
+});
+
+// --- Update Admin ---
+app.put('/api/admins/:admin_id', async (req, res) => {
+    try {
+        const { name, email, password, is_active } = req.body;
+        const { admin_id } = req.params;
+
+        if (password) {
+            const hashedPassword = await bcrypt.hash(password, saltRounds);
+            const result = await db.query(
+                'UPDATE admins SET name = $1, email = $2, password = $3, is_active = $4 WHERE admin_id = $5',
+                [name, email, hashedPassword, is_active, admin_id]
+            );
+            res.json({ success: true, changes: result.rowCount });
+        } else {
+            const result = await db.query(
+                'UPDATE admins SET name = $1, email = $2, is_active = $3 WHERE admin_id = $4',
+                [name, email, is_active, admin_id]
+            );
+            res.json({ success: true, changes: result.rowCount });
+        }
+    } catch (err) {
+        console.error('Update admin error:', err);
+        res.status(500).json({ error: 'Server error.' });
+    }
+});
+
+// --- Delete Admin ---
+app.delete('/api/admins/:admin_id', async (req, res) => {
+    try {
+        const result = await db.query('DELETE FROM admins WHERE admin_id = $1', [req.params.admin_id]);
+        res.json({ success: true, changes: result.rowCount });
+    } catch (err) {
+        console.error('Delete admin error:', err);
         res.status(500).json({ error: err.message });
     }
 });
