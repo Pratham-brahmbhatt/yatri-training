@@ -57,23 +57,50 @@ initializeDatabase();
 // API ENDPOINTS
 // =======================
 
-// --- Health Check ---
-app.get('/api/health', async (req, res) => {
+// --- Test Database Connection ---
+app.get('/api/test-db', async (req, res) => {
     try {
-        // Test database connection
-        await db.query('SELECT 1');
-        res.json({ 
-            status: 'healthy', 
-            database: 'connected',
-            environment: process.env.NODE_ENV || 'development',
-            timestamp: new Date().toISOString()
+        console.log('=== TESTING DATABASE CONNECTION ===');
+        const client = await db.connect();
+        console.log('Database connection successful');
+        
+        // Test basic query
+        const result = await client.query('SELECT NOW() as current_time');
+        console.log('Database query successful:', result.rows[0]);
+        
+        // Check if staff table exists
+        const tableCheck = await client.query(`
+            SELECT EXISTS (
+                SELECT FROM information_schema.tables 
+                WHERE table_schema = 'public' 
+                AND table_name = 'staff'
+            );
+        `);
+        
+        // Count staff if table exists
+        let staffCount = 0;
+        if (tableCheck.rows[0].exists) {
+            const countResult = await client.query('SELECT COUNT(*) FROM staff');
+            staffCount = parseInt(countResult.rows[0].count);
+        }
+        
+        client.release();
+        
+        res.json({
+            status: 'success',
+            database_connected: true,
+            current_time: result.rows[0].current_time,
+            staff_table_exists: tableCheck.rows[0].exists,
+            staff_count: staffCount,
+            environment: process.env.NODE_ENV || 'development'
         });
-    } catch (error) {
-        console.error('Health check failed:', error);
-        res.status(500).json({ 
-            status: 'unhealthy', 
-            database: 'disconnected',
-            error: error.message 
+    } catch (err) {
+        console.error('Database test error:', err);
+        res.status(500).json({
+            status: 'error',
+            database_connected: false,
+            error: err.message,
+            details: err.detail
         });
     }
 });
@@ -128,12 +155,57 @@ app.post('/api/staff/login', async (req, res) => {
 // --- Get All Staff (for Admin Dashboard) ---
 app.get('/api/staff', async (req, res) => {
     try {
-        const result = await db.query('SELECT id, name, staff_id, email, progress, quiz_score, created_by FROM staff');
-        console.log(`Retrieved ${result.rows.length} staff members`);
+        console.log('=== STAFF API CALLED ===');
+        console.log('Database URL configured:', process.env.DATABASE_URL ? 'Yes' : 'No');
+        
+        // Test database connection first
+        const client = await db.connect();
+        console.log('Database connection successful');
+        
+        // Check if table exists
+        const tableCheck = await client.query(`
+            SELECT EXISTS (
+                SELECT FROM information_schema.tables 
+                WHERE table_schema = 'public' 
+                AND table_name = 'staff'
+            );
+        `);
+        console.log('Staff table exists:', tableCheck.rows[0].exists);
+        
+        if (!tableCheck.rows[0].exists) {
+            console.log('Creating staff table...');
+            await client.query(`
+                CREATE TABLE staff (
+                    id SERIAL PRIMARY KEY,
+                    name TEXT NOT NULL,
+                    staff_id TEXT NOT NULL UNIQUE,
+                    email TEXT,
+                    password TEXT NOT NULL,
+                    progress TEXT DEFAULT '{}',
+                    quiz_score TEXT DEFAULT 'Not taken',
+                    created_by TEXT DEFAULT 'Unknown'
+                )
+            `);
+            console.log('Staff table created successfully');
+        }
+        
+        // Get all staff
+        const result = await client.query('SELECT id, name, staff_id, email, progress, quiz_score, created_by FROM staff ORDER BY id DESC');
+        console.log(`Retrieved ${result.rows.length} staff members:`, result.rows);
+        
+        client.release();
         res.json(result.rows);
     } catch (err) {
         console.error('Get staff error:', err);
-        res.status(500).json({ error: err.message });
+        console.error('Error details:', {
+            message: err.message,
+            code: err.code,
+            detail: err.detail
+        });
+        res.status(500).json({ 
+            error: err.message,
+            details: err.detail || 'Database connection failed'
+        });
     }
 });
 
@@ -141,24 +213,66 @@ app.get('/api/staff', async (req, res) => {
 app.post('/api/staff', async (req, res) => {
     try {
         const { name, staff_id, email, password, adminId } = req.body;
-        console.log(`Creating staff member: ${staff_id} by admin: ${adminId}`);
+        console.log(`=== CREATING STAFF MEMBER ===`);
+        console.log('Data received:', { name, staff_id, email, adminId });
+        
+        // Test database connection
+        const client = await db.connect();
+        console.log('Database connection successful for staff creation');
+        
+        // Ensure table exists
+        const tableCheck = await client.query(`
+            SELECT EXISTS (
+                SELECT FROM information_schema.tables 
+                WHERE table_schema = 'public' 
+                AND table_name = 'staff'
+            );
+        `);
+        
+        if (!tableCheck.rows[0].exists) {
+            console.log('Creating staff table...');
+            await client.query(`
+                CREATE TABLE staff (
+                    id SERIAL PRIMARY KEY,
+                    name TEXT NOT NULL,
+                    staff_id TEXT NOT NULL UNIQUE,
+                    email TEXT,
+                    password TEXT NOT NULL,
+                    progress TEXT DEFAULT '{}',
+                    quiz_score TEXT DEFAULT 'Not taken',
+                    created_by TEXT DEFAULT 'Unknown'
+                )
+            `);
+            console.log('Staff table created successfully');
+        }
         
         const hashedPassword = await bcrypt.hash(password, saltRounds);
+        console.log('Password hashed successfully');
         
-        const result = await db.query(
+        const result = await client.query(
             'INSERT INTO staff (name, staff_id, email, password, progress, created_by) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
             [name, staff_id, email, hashedPassword, JSON.stringify({}), adminId]
         );
         
         console.log(`Staff member created successfully with ID: ${result.rows[0].id}`);
+        client.release();
         res.json({ success: true, id: result.rows[0].id });
     } catch (err) {
+        console.error('Create staff error:', err);
+        console.error('Error details:', {
+            message: err.message,
+            code: err.code,
+            detail: err.detail
+        });
+        
         if (err.code === '23505') { // Unique constraint violation
             console.log(`Staff ID ${req.body.staff_id} already exists`);
             res.status(400).json({ error: 'Staff ID already exists.' });
         } else {
-            console.error('Create staff error:', err);
-            res.status(500).json({ error: 'Server error.' });
+            res.status(500).json({ 
+                error: 'Server error.',
+                details: err.message
+            });
         }
     }
 });
