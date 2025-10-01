@@ -2614,7 +2614,11 @@
                 return;
             }
             
+            console.log('Table body element found:', tableBody);
+            console.log('Table body parent:', tableBody.parentElement);
+            
             tableBody.innerHTML = '';
+            console.log('Table body cleared');
             
             if (!currentUsersData || currentUsersData.length === 0) {
                 console.log('No staff data to display');
@@ -2626,24 +2630,45 @@
             
             currentUsersData.forEach(user => {
                 console.log('Processing user:', user);
-                const progress = JSON.parse(user.progress || '{}');
+                
+                // Handle progress field - it might be a string or already an object
+                let progress;
+                if (typeof user.progress === 'string') {
+                    try {
+                        progress = JSON.parse(user.progress || '{}');
+                    } catch (e) {
+                        console.error('Error parsing progress for user', user.staff_id, ':', e);
+                        progress = {};
+                    }
+                } else {
+                    progress = user.progress || {};
+                }
+                
                 const completedCount = modules.filter(m => progress[m] === 'completed').length;
                 const progressPercent = Math.round((completedCount / modules.length) * 100);
+                
+                console.log(`User ${user.staff_id}: progress=`, progress, `completed=${completedCount}/${modules.length}`);
+                
                 const row = document.createElement('tr');
                 row.id = `user-row-${user.staff_id}`;
+                row.style.backgroundColor = '#2a2a2a'; // Make sure row is visible
+                
                 // MODIFIED: Updated the row structure to display 'created_by'
                 row.innerHTML = `
-                    <td>${user.name}</td>
-                    <td>${user.staff_id}</td>
-                    <td>${user.email || 'N/A'}</td>
-                    <td>${user.created_by || 'Unknown'}</td>
-                    <td>${completedCount}/${modules.length} (${progressPercent}%)</td>
-                    <td>${user.quiz_score !== null ? user.quiz_score : 'N/A'}</td>
+                    <td style="color: #FFD700;">${user.name}</td>
+                    <td style="color: #FFD700;">${user.staff_id}</td>
+                    <td style="color: #FFD700;">${user.email || 'N/A'}</td>
+                    <td style="color: #FFD700;">${user.created_by || 'Unknown'}</td>
+                    <td style="color: #FFD700;">${completedCount}/${modules.length} (${progressPercent}%)</td>
+                    <td style="color: #FFD700;">${user.quiz_score || 'N/A'}</td>
                     <td class="actions">
                         <button class="btn action-btn" onclick="editUser('${user.staff_id}')">Edit</button>
                         <button class="btn action-btn delete" onclick="deleteUser('${user.staff_id}')">Delete</button>
                     </td>`;
+                
+                console.log('Appending row to table:', row);
                 tableBody.appendChild(row);
+                console.log('Row appended successfully');
             });
             
             console.log(`Successfully populated ${currentUsersData.length} staff members`);
