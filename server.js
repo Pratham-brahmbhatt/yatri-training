@@ -7,7 +7,14 @@ const { Pool } = require('pg');
 const cors = require('cors');
 const bcrypt = require('bcrypt');
 const path = require('path');
-const nodemailer = require('nodemailer');
+// Email functionality - optional dependency
+let nodemailer;
+try {
+    nodemailer = require('nodemailer');
+} catch (error) {
+    console.log('Nodemailer not installed - email functionality disabled');
+    nodemailer = null;
+}
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -25,13 +32,16 @@ const db = new Pool({
 });
 
 // Email configuration
-const emailTransporter = nodemailer.createTransporter({
-    service: 'gmail',
-    auth: {
-        user: process.env.EMAIL_USER, // Your Gmail address
-        pass: process.env.EMAIL_PASS  // Your Gmail app password
-    }
-});
+let emailTransporter = null;
+if (nodemailer) {
+    emailTransporter = nodemailer.createTransporter({
+        service: 'gmail',
+        auth: {
+            user: process.env.EMAIL_USER, // Your Gmail address
+            pass: process.env.EMAIL_PASS  // Your Gmail app password
+        }
+    });
+}
 
 // Email templates
 const emailTemplates = {
@@ -136,6 +146,11 @@ const emailTemplates = {
 // Email sending function
 async function sendEmail(to, subject, html) {
     try {
+        if (!nodemailer || !emailTransporter) {
+            console.log('Nodemailer not available, skipping email send');
+            return { success: false, message: 'Email service not available' };
+        }
+
         if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
             console.log('Email credentials not configured, skipping email send');
             return { success: false, message: 'Email not configured' };
