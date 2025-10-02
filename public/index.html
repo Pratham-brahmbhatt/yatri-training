@@ -2689,12 +2689,6 @@
                         <p><strong>Characteristics:</strong> Botanical, juniper-forward, versatile.</p>
                         <p><strong>Service:</strong> Perfect for G&Ts, martinis</p>
                     </div>
-                    <div class="beverage-card">
-                        <h4>Signature Cocktails</h4>
-                        <p><strong>Examples:</strong> Mango Lassi Martini, Spiced Old Fashioned</p>
-                        <p><strong>Characteristics:</strong> Indian-inspired, unique flavors.</p>
-                        <p><strong>Service:</strong> Follow recipe precisely, garnish appropriately</p>
-                    </div>
                 </div>
             </div>
             
@@ -2980,7 +2974,7 @@
       <section id="assesment" class="page" data-module-index="9">
          <div class="container">
           <h2>Final Assessment</h2>
-          <p>Test your knowledge of YATRI's training modules. You must score at least 25 out of 30 to complete your onboarding.</p>
+          <p>Test your knowledge of YATRI's training modules. You must score at least 80% to complete your onboarding.</p>
           <form id="assesmentForm">
             <div id="assesmentArea">
                 <p>Loading your assessment questions...</p>
@@ -3772,7 +3766,9 @@
         certificateContainer.style.display = 'none';
         submitBtn.style.display = 'block';
 
-        currentAssesmentQuestions = shuffleArray([...questionBank]).slice(0, 50);
+        // Use all available questions (no more than 30 for a reasonable assessment)
+        const maxQuestions = Math.min(30, questionBank.length);
+        currentAssesmentQuestions = shuffleArray([...questionBank]).slice(0, maxQuestions);
 
         let assesmentHTML = '';
         currentAssesmentQuestions.forEach((q, index) => {
@@ -3794,30 +3790,83 @@
 
     async function submitAssesment() {
         let score = 0;
+        let userAnswers = [];
         const questions = document.querySelectorAll('#assesmentArea .question');
+        const totalQuestions = currentAssesmentQuestions.length;
 
         questions.forEach((questionElement, index) => {
             const selectedOption = questionElement.querySelector(`input[name="question${index}"]:checked`);
-            if (selectedOption) {
-                const selectedAnswer = parseInt(selectedOption.value, 10);
-                if (selectedAnswer === currentAssesmentQuestions[index].correct) {
-                    score++;
-                    questionElement.style.borderColor = '#00ff00';
-                } else {
-                    questionElement.style.borderColor = '#ff4d4d';
-                }
+            const selectedAnswer = selectedOption ? parseInt(selectedOption.value, 10) : -1;
+            const isCorrect = selectedAnswer === currentAssesmentQuestions[index].correct;
+            
+            userAnswers.push({
+                question: currentAssesmentQuestions[index].q,
+                options: currentAssesmentQuestions[index].a,
+                userAnswer: selectedAnswer,
+                correctAnswer: currentAssesmentQuestions[index].correct,
+                isCorrect: isCorrect
+            });
+
+            if (isCorrect) {
+                score++;
+                questionElement.style.borderColor = '#00ff00';
             } else {
                 questionElement.style.borderColor = '#ff4d4d';
             }
         });
 
         const resultEl = document.getElementById('assesmentResult');
-        const passingScore = 1; // Correct passing score
-        resultEl.innerHTML = `<h3>Your Score: ${score} out of 50</h3>`;
+        const passingScore = Math.ceil(totalQuestions * 0.8); // 80% passing score
+        const percentage = Math.round((score / totalQuestions) * 100);
+        
+        // Display score and results
+        let resultHTML = `
+            <div style="background: #2a2a2a; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                <h3 style="color: ${score >= passingScore ? '#00ff00' : '#ff4d4d'};">
+                    Your Score: ${score} out of ${totalQuestions} (${percentage}%)
+                </h3>
+                <p style="color: #FFD700;">
+                    ${score >= passingScore ? '🎉 Congratulations! You passed the assessment!' : '❌ You need to score at least ' + passingScore + ' to pass. Please review the training materials and try again.'}
+                </p>
+            </div>
+            
+            <div style="background: #1a1a1a; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                <h4 style="color: #FFD700; margin-bottom: 15px;">📋 Detailed Results:</h4>
+                <div style="max-height: 400px; overflow-y: auto;">
+        `;
+
+        userAnswers.forEach((answer, index) => {
+            const userAnswerText = answer.userAnswer >= 0 ? answer.options[answer.userAnswer] : 'No answer selected';
+            const correctAnswerText = answer.options[answer.correctAnswer];
+            
+            resultHTML += `
+                <div style="margin-bottom: 15px; padding: 10px; background: ${answer.isCorrect ? 'rgba(0, 255, 0, 0.1)' : 'rgba(255, 77, 77, 0.1)'}; border-radius: 5px; border-left: 4px solid ${answer.isCorrect ? '#00ff00' : '#ff4d4d'};">
+                    <p style="color: #FFD700; font-weight: bold; margin-bottom: 8px;">
+                        ${index + 1}. ${answer.question}
+                    </p>
+                    <p style="color: ${answer.isCorrect ? '#00ff00' : '#ff4d4d'}; margin: 5px 0;">
+                        <strong>Your Answer:</strong> ${userAnswerText}
+                    </p>
+                    <p style="color: #00ff00; margin: 5px 0;">
+                        <strong>Correct Answer:</strong> ${correctAnswerText}
+                    </p>
+                    <p style="color: ${answer.isCorrect ? '#00ff00' : '#ff4d4d'}; font-size: 0.9em; margin: 5px 0;">
+                        ${answer.isCorrect ? '✅ Correct' : '❌ Incorrect'}
+                    </p>
+                </div>
+            `;
+        });
+
+        resultHTML += `
+                </div>
+            </div>
+        `;
+
+        resultEl.innerHTML = resultHTML;
 
         try {
-            await apiRequest('/api/progress', 'POST', { staffId: currentLoggedInUser.staff_id, quizScore: `${score} out of 50` });
-            currentLoggedInUser.quiz_score = `${score} out of 50`;
+            await apiRequest('/api/progress', 'POST', { staffId: currentLoggedInUser.staff_id, quizScore: `${score} out of ${totalQuestions}` });
+            currentLoggedInUser.quiz_score = `${score} out of ${totalQuestions}`;
             sessionStorage.setItem('loggedInUser', JSON.stringify(currentLoggedInUser));
         } catch (err) {
             console.error("Failed to update quiz score", err);
