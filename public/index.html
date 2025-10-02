@@ -1383,6 +1383,11 @@
             padding: 3px 6px;
             font-size: 0.6em;
         }
+
+        /* Broadcast email mobile styles */
+        #email-message {
+            min-height: 100px;
+        }
     }
     
     /* Additional mobile improvements */
@@ -3101,9 +3106,26 @@
             <tbody id="admin-table-body"></tbody>
           </table>
         </div>
-      </div>
-    </div>
-  </section>
+            </div>
+        </div>
+
+        <!-- Broadcast Email Section -->
+        <div class="container admin-grid" style="margin-top: 20px;">
+            <div class="admin-section" style="grid-column: 1 / -1;">
+                <h3>📧 Broadcast Email to All Staff</h3>
+                <form id="broadcast-email-form">
+                    <label for="email-subject">Email Subject</label>
+                    <input type="text" id="email-subject" placeholder="e.g., New Training Module Available!" required>
+
+                    <label for="email-message">Message</label>
+                    <textarea id="email-message" rows="6" placeholder="Write your message here..." required style="resize: vertical; font-family: Arial, sans-serif;"></textarea>
+
+                    <button type="submit" class="btn">📤 Send Broadcast Email</button>
+                </form>
+                <div id="broadcast-message" style="margin-top: 15px;"></div>
+            </div>
+        </div>
+    </section>
   <footer><p>&copy; 2025 YATRI Indian Restaurant. All rights reserved.</p></footer>
 
 <script>
@@ -3322,6 +3344,58 @@
             }
         } catch (error) {
             console.error("Admin login failed:", error);
+        }
+    });
+
+    // Broadcast Email Form Handler
+    document.getElementById('broadcast-email-form').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const messageEl = document.getElementById('broadcast-message');
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        
+        try {
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.textContent = '📤 Sending...';
+            messageEl.innerHTML = '<p style="color: #FFD700;">📤 Sending broadcast email to all staff members...</p>';
+
+            const subject = document.getElementById('email-subject').value;
+            const message = document.getElementById('email-message').value;
+
+            const result = await apiRequest('/api/broadcast-email', 'POST', {
+                subject: subject,
+                message: message,
+                adminName: currentAdminId
+            });
+
+            if (result.success) {
+                messageEl.innerHTML = `
+                    <div style="background: rgba(0, 255, 0, 0.1); padding: 15px; border-radius: 8px; border-left: 4px solid #00ff00;">
+                        <h4 style="color: #00ff00; margin: 0 0 10px 0;">✅ Broadcast Email Sent Successfully!</h4>
+                        <p style="color: #E0E0E0; margin: 5px 0;">📧 Total Recipients: ${result.totalRecipients}</p>
+                        <p style="color: #00ff00; margin: 5px 0;">✅ Emails Sent: ${result.emailsSent}</p>
+                        ${result.emailsFailed > 0 ? `<p style="color: #ff4d4d; margin: 5px 0;">❌ Failed: ${result.emailsFailed}</p>` : ''}
+                    </div>
+                `;
+                
+                // Clear form
+                this.reset();
+            } else {
+                throw new Error(result.error || 'Failed to send broadcast email');
+            }
+
+        } catch (error) {
+            console.error('Broadcast email error:', error);
+            messageEl.innerHTML = `
+                <div style="background: rgba(255, 77, 77, 0.1); padding: 15px; border-radius: 8px; border-left: 4px solid #ff4d4d;">
+                    <h4 style="color: #ff4d4d; margin: 0 0 10px 0;">❌ Error Sending Email</h4>
+                    <p style="color: #E0E0E0; margin: 0;">${error.message}</p>
+                </div>
+            `;
+        } finally {
+            // Reset button state
+            submitBtn.disabled = false;
+            submitBtn.textContent = '📤 Send Broadcast Email';
         }
     });
 
