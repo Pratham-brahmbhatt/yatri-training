@@ -34,13 +34,19 @@ const db = new Pool({
 // Email configuration
 let emailTransporter = null;
 if (nodemailer) {
-    emailTransporter = nodemailer.createTransporter({
-        service: 'gmail',
-        auth: {
-            user: process.env.EMAIL_USER, // Your Gmail address
-            pass: process.env.EMAIL_PASS  // Your Gmail app password
-        }
-    });
+    try {
+        emailTransporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: process.env.EMAIL_USER, // Your Gmail address
+                pass: process.env.EMAIL_PASS  // Your Gmail app password
+            }
+        });
+        console.log('Email transporter configured successfully');
+    } catch (error) {
+        console.log('Failed to configure email transporter:', error.message);
+        emailTransporter = null;
+    }
 }
 
 // Email templates
