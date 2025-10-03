@@ -447,7 +447,7 @@ app.post('/api/staff', async (req, res) => {
         client.release();
         
         // Send welcome email
-        if (email) {
+        if (email && process.env.EMAIL_USER && process.env.EMAIL_PASS) {
             const emailTemplate = emailTemplates.welcomeEmail(name, staff_id, password);
             const emailResult = await sendEmail(email, emailTemplate.subject, emailTemplate.html);
             
@@ -456,6 +456,8 @@ app.post('/api/staff', async (req, res) => {
             } else {
                 console.log(`Failed to send welcome email to ${email}:`, emailResult.error);
             }
+        } else if (email) {
+            console.log(`Email credentials not configured - skipping welcome email to ${email}`);
         }
         
         res.json({ success: true, id: result.rows[0].id, emailSent: email ? true : false });
@@ -602,6 +604,13 @@ app.post('/api/broadcast-email', async (req, res) => {
         
         if (!subject || !message || !adminName) {
             return res.status(400).json({ error: 'Subject, message, and admin name are required' });
+        }
+
+        // Check if email credentials are configured
+        if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+            return res.status(400).json({ 
+                error: 'Email credentials not configured. Please set EMAIL_USER and EMAIL_PASS environment variables.' 
+            });
         }
 
         // Get all staff emails
