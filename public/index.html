@@ -168,23 +168,6 @@
         border: 1px solid rgba(255, 215, 0, 0.2);
     }
     
-    /* Mobile Responsive Container */
-    @media (max-width: 768px) {
-        .container {
-            margin: 5px auto;
-            padding: 10px;
-            border-radius: 12px;
-        }
-    }
-    
-    @media (max-width: 480px) {
-        .container {
-            margin: 2px auto;
-            padding: 8px;
-            border-radius: 10px;
-        }
-    }
-    
     h2, h3 { 
         margin-top: 0; 
         color: #FFD700; 
@@ -336,37 +319,6 @@
     box-shadow: none;
 }
 
-/* Mobile Responsive Module Hub */
-@media (max-width: 768px) {
-    #module-grid-container {
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 16px;
-        margin-top: 20px;
-        padding: 0 10px;
-    }
-    
-    .module-box {
-        padding: 20px 16px;
-        font-size: 1.1em;
-        border-radius: 12px;
-    }
-}
-
-@media (max-width: 480px) {
-    #module-grid-container {
-        grid-template-columns: 1fr;
-        gap: 12px;
-        margin-top: 15px;
-        padding: 0 5px;
-    }
-    
-    .module-box {
-        padding: 16px 12px;
-        font-size: 1em;
-        border-radius: 10px;
-    }
-}
-
     /* --- Styles for Redesigned Professional Welcome Page --- */
     #welcome .container { background-color: transparent; box-shadow: none; padding: 0; }
     .welcome-hero { text-align: center; padding: 40px 20px; background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); border-radius: 16px; border: 1px solid rgba(255, 215, 0, 0.2); }
@@ -388,83 +340,6 @@
     @media (max-width: 768px) {
         .welcome-story, .welcome-story:nth-child(even) { flex-direction: column; }
         .welcome-story-image, .welcome-mission-image { max-width: 100%; }
-        
-        /* Mobile Welcome Page Styles */
-        .welcome-hero {
-            padding: 20px 15px;
-            margin: 10px;
-        }
-        
-        .welcome-hero h2 {
-            font-size: 2em;
-        }
-        
-        .welcome-hero p {
-            font-size: 1.1em;
-        }
-        
-        .welcome-content {
-            padding: 20px 10px;
-            gap: 20px;
-        }
-        
-        .welcome-story, .welcome-mission {
-            flex-direction: column;
-            gap: 15px;
-            text-align: center;
-        }
-        
-        .welcome-story-text, .welcome-mission-text {
-            flex: none;
-        }
-        
-        .welcome-story-image, .welcome-mission-image {
-            flex: none;
-            max-width: 100%;
-            border-radius: 8px;
-        }
-        
-        .values-grid {
-            grid-template-columns: 1fr;
-            gap: 15px;
-            padding: 0 10px;
-        }
-        
-        .value-card {
-            padding: 15px;
-        }
-    }
-    
-    @media (max-width: 480px) {
-        .welcome-hero {
-            padding: 15px 10px;
-            margin: 5px;
-        }
-        
-        .welcome-hero h2 {
-            font-size: 1.8em;
-        }
-        
-        .welcome-hero p {
-            font-size: 1em;
-        }
-        
-        .welcome-content {
-            padding: 15px 5px;
-            gap: 15px;
-        }
-        
-        .welcome-story, .welcome-mission {
-            gap: 10px;
-        }
-        
-        .values-grid {
-            padding: 0 5px;
-        }
-        
-        .value-card {
-            padding: 12px;
-        }
     }
 
     /* --- Styles for Redesigned Responsibilities Page --- */
@@ -484,69 +359,6 @@
     .spec-card { background-color: #2a2a2a; padding: 20px; border-radius: 8px; border-top: 4px solid #FFD700; }
     .spec-card h4 { margin-top: 0; color: #FFD700; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    
-    /* Mobile Responsive Responsibilities Page */
-    @media (max-width: 768px) {
-        .responsibilities-intro {
-            margin-bottom: 20px;
-            padding: 0 10px;
-        }
-        
-        .responsibilities-intro h2 {
-            font-size: 2em;
-        }
-        
-        .responsibilities-intro p {
-            font-size: 1em;
-            max-width: 100%;
-        }
-        
-        .tab-buttons {
-            flex-wrap: wrap;
-            gap: 5px;
-        }
-        
-        .tab-button {
-            padding: 8px 12px;
-            font-size: 0.9em;
-            flex: 1;
-            min-width: 120px;
-        }
-        
-        .spec-grid {
-            grid-template-columns: 1fr;
-            gap: 15px;
-            padding: 0 10px;
-        }
-        
-        .spec-card {
-            padding: 15px;
-        }
-    }
-    
-    @media (max-width: 480px) {
-        .responsibilities-intro {
-            padding: 0 5px;
-        }
-        
-        .responsibilities-intro h2 {
-            font-size: 1.8em;
-        }
-        
-        .tab-button {
-            padding: 6px 8px;
-            font-size: 0.8em;
-            min-width: 100px;
-        }
-        
-        .spec-grid {
-            padding: 0 5px;
-        }
-        
-        .spec-card {
-            padding: 12px;
-        }
-    }
 
     /* --- Styles for Steps of Service Page --- */
     .service-steps-container { padding: 10px; }
@@ -555,47 +367,6 @@
     .step-details h3 { border: none; margin: 0 0 5px 0; padding: 0; font-size: 1.4em; }
     .step-details .action { font-weight: bold; color: #FFFFFF; }
     .step-details .key-points { color: #b0b0b0; }
-    
-    /* Mobile Responsive Service Steps */
-    @media (max-width: 768px) {
-        .service-steps-container {
-            padding: 15px 10px;
-        }
-        
-        .service-step {
-            flex-direction: column;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        
-        .step-number {
-            font-size: 2em;
-            margin-right: 0;
-            margin-bottom: 10px;
-        }
-        
-        .step-details h3 {
-            font-size: 1.2em;
-        }
-    }
-    
-    @media (max-width: 480px) {
-        .service-steps-container {
-            padding: 10px 5px;
-        }
-        
-        .service-step {
-            margin-bottom: 15px;
-        }
-        
-        .step-number {
-            font-size: 1.8em;
-        }
-        
-        .step-details h3 {
-            font-size: 1.1em;
-        }
-    }
 
     /* --- Styles for Uniform Page --- */
     .uniform-layout { display: flex; gap: 30px; margin-top: 20px; }
@@ -607,46 +378,8 @@
     .uniform-category ul { list-style-type: '✓'; padding-left: 20px; margin-bottom: 0; }
     .uniform-category ul li { padding-left: 10px; margin-bottom: 10px; }
     @media (max-width: 768px) {
-        .uniform-layout { 
-            flex-direction: column; 
-            gap: 20px;
-            padding: 0 10px;
-        }
-        .uniform-image-container { 
-            max-width: 100%; 
-        }
-        
-        .uniform-details {
-            padding: 0 10px;
-        }
-        
-        .uniform-category {
-            padding: 15px;
-            margin-bottom: 15px;
-        }
-        
-        .uniform-category h3 {
-            font-size: 1.2em;
-        }
-    }
-    
-    @media (max-width: 480px) {
-        .uniform-layout {
-            padding: 0 5px;
-        }
-        
-        .uniform-details {
-            padding: 0 5px;
-        }
-        
-        .uniform-category {
-            padding: 12px;
-            margin-bottom: 12px;
-        }
-        
-        .uniform-category h3 {
-            font-size: 1.1em;
-        }
+        .uniform-layout { flex-direction: column; }
+        .uniform-image-container { max-width: 100%; }
     }
 
     /* --- Styles for Allergen Page --- */
@@ -761,46 +494,7 @@
     }
     
     @media (max-width: 800px) {
-        .allergen-main-content, .allergen-columns { 
-            flex-direction: column; 
-            gap: 20px;
-            padding: 0 10px;
-        }
-        
-        .allergen-left-col, .allergen-right-col {
-            flex: none;
-        }
-        
-        .allergen-column {
-            gap: 10px;
-        }
-        
-        .allergen-card {
-            padding: 15px;
-        }
-        
-        .emergency-protocol {
-            padding: 15px;
-        }
-    }
-    
-    @media (max-width: 480px) {
-        .allergen-main-content, .allergen-columns {
-            padding: 0 5px;
-            gap: 15px;
-        }
-        
-        .allergen-column {
-            gap: 8px;
-        }
-        
-        .allergen-card {
-            padding: 12px;
-        }
-        
-        .emergency-protocol {
-            padding: 12px;
-        }
+        .allergen-main-content, .allergen-columns { flex-direction: column; }
     }
 
     /* Video Section Styles */
@@ -940,44 +634,7 @@
     .fire-card { background-color: #333; padding: 15px; border-radius: 5px; }
     .fire-card h4 { margin: 0 0 10px 0; color: #FFD700; }
     @media (max-width: 768px) {
-        .safety-grid, .fire-grid { 
-            grid-template-columns: 1fr; 
-            gap: 15px;
-            padding: 0 10px;
-        }
-        
-        .safety-card, .fire-card {
-            padding: 15px;
-        }
-        
-        .fire-safety-section {
-            padding: 20px;
-            margin-top: 20px;
-        }
-        
-        .fire-safety-section h3 {
-            font-size: 1.4em;
-        }
-    }
-    
-    @media (max-width: 480px) {
-        .safety-grid, .fire-grid {
-            padding: 0 5px;
-            gap: 12px;
-        }
-        
-        .safety-card, .fire-card {
-            padding: 12px;
-        }
-        
-        .fire-safety-section {
-            padding: 15px;
-            margin-top: 15px;
-        }
-        
-        .fire-safety-section h3 {
-            font-size: 1.2em;
-        }
+        .safety-grid, .fire-grid { grid-template-columns: 1fr; }
     }
 
     /* ---Certificate Styles --- */
@@ -1228,210 +885,7 @@
         backdrop-filter: blur(10px);
     }
     
-    /* Mobile Responsive Styles */
-    @media (max-width: 1024px) {
-        .admin-grid { 
-            grid-template-columns: 1fr; 
-            gap: 20px; 
-            margin: 0 10px;
-        }
-        
-        .admin-section { 
-            padding: 20px; 
-            margin: 0;
-        }
-    }
-    
-    @media (max-width: 768px) {
-        .admin-grid { 
-            grid-template-columns: 1fr; 
-            gap: 15px; 
-            margin: 0 5px;
-        }
-        
-        .admin-section { 
-            padding: 15px; 
-            margin: 0;
-            border-radius: 12px;
-        }
-        
-        .admin-section h3 {
-            font-size: 1.3em;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-        
-        .admin-section form {
-            margin-bottom: 15px;
-        }
-        
-        .admin-section label {
-            font-size: 0.9em;
-            margin-bottom: 5px;
-            display: block;
-            color: #FFD700;
-        }
-        
-        .admin-section input {
-            padding: 12px;
-            font-size: 16px; /* Prevents zoom on iOS */
-            margin-bottom: 10px;
-            width: 100%;
-            box-sizing: border-box;
-            border-radius: 8px;
-        }
-        
-        .admin-section button {
-            padding: 12px 20px;
-            font-size: 14px;
-            width: 100%;
-            margin-top: 10px;
-        }
-        
-        /* Mobile table improvements */
-        .table-container {
-            margin: 0 -5px;
-            padding: 0 5px;
-        }
-        
-        #staff-progress-table, #admin-table {
-            font-size: 0.8em;
-            margin-top: 15px;
-        }
-        
-        #staff-progress-table th, #admin-table th {
-            padding: 8px 4px;
-            font-size: 0.75em;
-        }
-        
-        #staff-progress-table td, #admin-table td {
-            padding: 6px 4px;
-            font-size: 0.7em;
-        }
-        
-        .actions {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-        
-        .action-btn {
-            padding: 4px 8px;
-            font-size: 0.7em;
-            width: 100%;
-        }
-    }
-    
-    @media (max-width: 480px) {
-        .admin-grid { 
-            margin: 0 2px;
-            gap: 10px;
-        }
-        
-        .admin-section { 
-            padding: 10px; 
-            margin: 0;
-        }
-        
-        .admin-section h3 {
-            font-size: 1.1em;
-            margin-bottom: 10px;
-        }
-        
-        .admin-section input {
-            padding: 10px;
-            font-size: 16px;
-            margin-bottom: 8px;
-        }
-        
-        .admin-section button {
-            padding: 10px 16px;
-            font-size: 12px;
-        }
-        
-        /* Very small screens - make table scrollable */
-        .table-container {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            margin: 0 -2px;
-            padding: 0 2px;
-        }
-        
-        #staff-progress-table, #admin-table {
-            min-width: 500px;
-            font-size: 0.75em;
-        }
-        
-        #staff-progress-table th, #admin-table th {
-            padding: 6px 3px;
-            font-size: 0.7em;
-        }
-        
-        #staff-progress-table td, #admin-table td {
-            padding: 4px 3px;
-            font-size: 0.65em;
-        }
-        
-        .action-btn {
-            padding: 3px 6px;
-            font-size: 0.65em;
-        }
-        
-        /* Mobile refresh button styling */
-        .admin-section h3 button {
-            margin-left: 5px;
-            padding: 3px 6px;
-            font-size: 0.6em;
-        }
-
-        /* Broadcast email mobile styles */
-        #email-message {
-            min-height: 100px;
-        }
-    }
-    
-    /* Additional mobile improvements */
-    @media (max-width: 768px) {
-        /* Better spacing for admin sections */
-        .admin-section {
-            margin-bottom: 10px;
-        }
-        
-        /* Improve form layout */
-        .admin-section form {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        
-        .admin-section label {
-            font-weight: 500;
-            margin-bottom: 2px;
-        }
-        
-        /* Better button styling */
-        .admin-section button[type="submit"] {
-            margin-top: 5px;
-            border-radius: 8px;
-        }
-        
-        /* Refresh button improvements */
-        .admin-section h3 button {
-            margin-left: 8px;
-            padding: 4px 8px;
-            font-size: 0.7em;
-            border-radius: 6px;
-        }
-        
-        /* Message styling */
-        .admin-section p {
-            margin-top: 8px;
-            font-size: 0.9em;
-            text-align: center;
-        }
-    }
-    
-    #staff-progress-table, #admin-table { 
+    #staff-progress-table { 
         width: 100%; 
         border-collapse: collapse; 
         margin-top: 20px; 
@@ -1440,13 +894,13 @@
         overflow: hidden;
     }
     
-    #staff-progress-table th, #staff-progress-table td, #admin-table th, #admin-table td { 
+    #staff-progress-table th, #staff-progress-table td { 
         border: 1px solid rgba(99, 102, 241, 0.2); 
         padding: 16px; 
         text-align: left; 
     }
     
-    #staff-progress-table th, #admin-table th { 
+    #staff-progress-table th { 
         background: linear-gradient(135deg, rgba(255, 215, 0, 0.8) 0%, rgba(230, 184, 0, 0.8) 100%);
         color: #000000; 
         font-weight: 600;
@@ -1455,7 +909,7 @@
         font-size: 0.9em;
     }
     
-    #staff-progress-table td, #admin-table td { 
+    #staff-progress-table td { 
         background: rgba(42, 42, 42, 0.5);
         color: #FFD700;
     }
@@ -1490,59 +944,6 @@
     
     .action-btn.delete { 
         background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-    }
-    
-    /* Mobile Responsive Table Styles */
-    @media (max-width: 768px) {
-        #staff-progress-table {
-            font-size: 0.8em;
-            margin-top: 15px;
-        }
-        
-        #staff-progress-table th {
-            padding: 10px 6px;
-            font-size: 0.8em;
-        }
-        
-        #staff-progress-table td {
-            padding: 8px 6px;
-            font-size: 0.75em;
-        }
-        
-        .action-btn {
-            padding: 6px 10px;
-            font-size: 0.75em;
-            margin-right: 4px;
-        }
-    }
-    
-    @media (max-width: 480px) {
-        /* Make table horizontally scrollable on very small screens */
-        .table-container {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-        
-        #staff-progress-table {
-            min-width: 600px; /* Ensure table doesn't get too cramped */
-            font-size: 0.75em;
-        }
-        
-        #staff-progress-table th {
-            padding: 8px 4px;
-            font-size: 0.75em;
-        }
-        
-        #staff-progress-table td {
-            padding: 6px 4px;
-            font-size: 0.7em;
-        }
-        
-        .action-btn {
-            padding: 4px 8px;
-            font-size: 0.7em;
-            margin-right: 2px;
-        }
     }
     
     .admin-section input {
@@ -1847,155 +1248,7 @@
     .checklist-item input[type="checkbox"]:checked + label {
         color: #FFD700;
     }
-    @media (max-width: 768px) { 
-        #welcome-message { display: none; } 
-        
-        /* Mobile Module Navigation */
-        .module-nav {
-            flex-direction: column;
-            gap: 10px;
-            padding: 15px 10px;
-        }
-        
-        .module-nav button {
-            width: 100%;
-            padding: 12px 20px;
-            font-size: 14px;
-        }
-    }
-    
-    @media (max-width: 480px) {
-        .module-nav {
-            padding: 10px 5px;
-            gap: 8px;
-        }
-        
-        .module-nav button {
-            padding: 10px 16px;
-            font-size: 13px;
-        }
-    }
-    
-    /* Mobile Responsive Login Page */
-    @media (max-width: 768px) {
-        .login-container {
-            flex-direction: column;
-            gap: 20px;
-            padding: 20px;
-        }
-        
-        .login-box {
-            width: 100%;
-            max-width: 400px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
-        .login-box h2 {
-            font-size: 1.5em;
-            margin-bottom: 15px;
-        }
-        
-        .login-box input {
-            padding: 12px;
-            font-size: 16px; /* Prevents zoom on iOS */
-            margin-bottom: 10px;
-        }
-        
-        .login-box button {
-            padding: 12px 20px;
-            font-size: 14px;
-            width: 100%;
-        }
-        
-        .logo-container {
-            margin-bottom: 20px;
-        }
-        
-        .logo {
-            max-width: 200px;
-        }
-    }
-    
-    @media (max-width: 480px) {
-        .login-container {
-            padding: 15px;
-            gap: 15px;
-        }
-        
-        .login-box {
-            padding: 15px;
-        }
-        
-        .login-box h2 {
-            font-size: 1.3em;
-            margin-bottom: 12px;
-        }
-        
-        .login-box input {
-            padding: 10px;
-            font-size: 16px;
-            margin-bottom: 8px;
-        }
-        
-        .login-box button {
-            padding: 10px 16px;
-            font-size: 13px;
-        }
-        
-        .logo {
-            max-width: 150px;
-        }
-    }
-    
-    /* Mobile Responsive Header */
-    @media (max-width: 768px) {
-        header {
-            padding: 10px;
-            flex-direction: row;
-            justify-content: space-between;
-            align-items: center;
-            position: relative;
-        }
-        
-        header h1 {
-            font-size: 1.2em;
-            margin: 0;
-            flex: 1;
-            text-align: center;
-        }
-        
-        .header-logo {
-            max-width: 60px;
-            height: auto;
-        }
-        
-        header a {
-            position: static;
-            padding: 8px 12px;
-            font-size: 0.8em;
-            margin: 0;
-        }
-    }
-    
-    @media (max-width: 480px) {
-        header {
-            padding: 8px;
-        }
-        
-        header h1 {
-            font-size: 1em;
-        }
-        
-        .header-logo {
-            max-width: 50px;
-        }
-        
-        header a {
-            padding: 6px 10px;
-            font-size: 0.7em;
-        }
-    }
+    @media (max-width: 768px) { #welcome-message { display: none; } }
   </style>
 </head>
 <body>
@@ -2694,6 +1947,12 @@
                         <p><strong>Characteristics:</strong> Botanical, juniper-forward, versatile.</p>
                         <p><strong>Service:</strong> Perfect for G&Ts, martinis</p>
                     </div>
+                    <div class="beverage-card">
+                        <h4>Signature Cocktails</h4>
+                        <p><strong>Examples:</strong> Mango Lassi Martini, Spiced Old Fashioned</p>
+                        <p><strong>Characteristics:</strong> Indian-inspired, unique flavors.</p>
+                        <p><strong>Service:</strong> Follow recipe precisely, garnish appropriately</p>
+                    </div>
                 </div>
             </div>
             
@@ -2979,7 +2238,7 @@
       <section id="assesment" class="page" data-module-index="9">
          <div class="container">
           <h2>Final Assessment</h2>
-          <p>Test your knowledge of YATRI's training modules. You must score at least 80% to complete your onboarding.</p>
+          <p>Test your knowledge of YATRI's training modules. You must score at least 25 out of 30 to complete your onboarding.</p>
           <form id="assesmentForm">
             <div id="assesmentArea">
                 <p>Loading your assessment questions...</p>
@@ -3048,8 +2307,8 @@
         <p id="create-user-message"></p>
       </div>
       <div class="admin-section">
-        <h3>Manage Staff & Progress <button onclick="populateAdminDashboard()" class="btn" style="margin-left: 10px; padding: 5px 10px; font-size: 12px;">Refresh</button></h3>
-        <div class="table-container" style="overflow-x:auto;">
+        <h3>Manage Staff & Progress</h3>
+        <div style="overflow-x:auto;">
           <table id="staff-progress-table">
             <thead>
               <tr>
@@ -3067,65 +2326,7 @@
         </div>
       </div>
     </div>
-    
-    <!-- Admin Management Section -->
-    <div class="container admin-grid" style="margin-top: 20px;">
-      <div class="admin-section">
-        <h3>Create New Admin</h3>
-        <form id="create-admin-form">
-          <label for="new-admin-name">Full Name</label>
-          <input type="text" id="new-admin-name" placeholder="Admin Full Name" required>
-          
-          <label for="new-admin-id">Admin ID</label>
-          <input type="text" id="new-admin-id" placeholder="Admin ID (e.g., admin1)" required>
-          
-          <label for="new-admin-email">Email Address</label>
-          <input type="email" id="new-admin-email" placeholder="Email Address" required autocomplete="off">
-          
-          <label for="new-admin-password">Password</label>
-          <input type="password" id="new-admin-password" placeholder="Password" required autocomplete="off">
-          
-          <button type="submit" class="btn">Create Admin</button>
-        </form>
-        <p id="create-admin-message"></p>
-      </div>
-      <div class="admin-section">
-        <h3>Manage Admins <button onclick="populateAdminList()" class="btn" style="margin-left: 10px; padding: 5px 10px; font-size: 12px;">Refresh</button></h3>
-        <div class="table-container" style="overflow-x:auto;">
-          <table id="admin-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Admin ID</th>
-                <th>Email</th>
-                <th>Created By</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="admin-table-body"></tbody>
-          </table>
-        </div>
-            </div>
-        </div>
-
-        <!-- Broadcast Email Section -->
-        <div class="container admin-grid" style="margin-top: 20px;">
-            <div class="admin-section" style="grid-column: 1 / -1;">
-                <h3>📧 Broadcast Email to All Staff</h3>
-                <form id="broadcast-email-form">
-                    <label for="email-subject">Email Subject</label>
-                    <input type="text" id="email-subject" placeholder="e.g., New Training Module Available!" required>
-
-                    <label for="email-message">Message</label>
-                    <textarea id="email-message" rows="6" placeholder="Write your message here..." required style="resize: vertical; font-family: Arial, sans-serif;"></textarea>
-
-                    <button type="submit" class="btn">📤 Send Broadcast Email</button>
-                </form>
-                <div id="broadcast-message" style="margin-top: 15px;"></div>
-            </div>
-        </div>
-    </section>
+  </section>
   <footer><p>&copy; 2025 YATRI Indian Restaurant. All rights reserved.</p></footer>
 
 <script>
@@ -3290,8 +2491,8 @@
         const options = { method, headers: { 'Content-Type': 'application/json' } };
         if (body) { options.body = JSON.stringify(body); }
         try {
-            // Use relative URL for production deployment
-            const response = await fetch(`${endpoint}`, options);
+            // This assumes your API server is running on localhost:3000
+            const response = await fetch(`http://localhost:3000${endpoint}`, options);
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.message || 'An API error occurred');
@@ -3340,62 +2541,9 @@
                 currentAdminId = adminIdInput.value; // MODIFIED: Store the admin ID on successful login
                 showView('admin-dashboard');
                 populateAdminDashboard();
-                populateAdminList(); // Load admin list
             }
         } catch (error) {
             console.error("Admin login failed:", error);
-        }
-    });
-
-    // Broadcast Email Form Handler
-    document.getElementById('broadcast-email-form').addEventListener('submit', async function (e) {
-        e.preventDefault();
-        const messageEl = document.getElementById('broadcast-message');
-        const submitBtn = e.target.querySelector('button[type="submit"]');
-        
-        try {
-            // Show loading state
-            submitBtn.disabled = true;
-            submitBtn.textContent = '📤 Sending...';
-            messageEl.innerHTML = '<p style="color: #FFD700;">📤 Sending broadcast email to all staff members...</p>';
-
-            const subject = document.getElementById('email-subject').value;
-            const message = document.getElementById('email-message').value;
-
-            const result = await apiRequest('/api/broadcast-email', 'POST', {
-                subject: subject,
-                message: message,
-                adminName: currentAdminId
-            });
-
-            if (result.success) {
-                messageEl.innerHTML = `
-                    <div style="background: rgba(0, 255, 0, 0.1); padding: 15px; border-radius: 8px; border-left: 4px solid #00ff00;">
-                        <h4 style="color: #00ff00; margin: 0 0 10px 0;">✅ Broadcast Email Sent Successfully!</h4>
-                        <p style="color: #E0E0E0; margin: 5px 0;">📧 Total Recipients: ${result.totalRecipients}</p>
-                        <p style="color: #00ff00; margin: 5px 0;">✅ Emails Sent: ${result.emailsSent}</p>
-                        ${result.emailsFailed > 0 ? `<p style="color: #ff4d4d; margin: 5px 0;">❌ Failed: ${result.emailsFailed}</p>` : ''}
-                    </div>
-                `;
-                
-                // Clear form
-                this.reset();
-            } else {
-                throw new Error(result.error || 'Failed to send broadcast email');
-            }
-
-        } catch (error) {
-            console.error('Broadcast email error:', error);
-            messageEl.innerHTML = `
-                <div style="background: rgba(255, 77, 77, 0.1); padding: 15px; border-radius: 8px; border-left: 4px solid #ff4d4d;">
-                    <h4 style="color: #ff4d4d; margin: 0 0 10px 0;">❌ Error Sending Email</h4>
-                    <p style="color: #E0E0E0; margin: 0;">${error.message}</p>
-                </div>
-            `;
-        } finally {
-            // Reset button state
-            submitBtn.disabled = false;
-            submitBtn.textContent = '📤 Send Broadcast Email';
         }
     });
 
@@ -3454,179 +2602,32 @@
     }
 });
 
-    // Admin Management Functions
-    document.getElementById('create-admin-form').addEventListener('submit', async function (e) {
-        e.preventDefault();
-        const messageEl = document.getElementById('create-admin-message');
-        try {
-            await apiRequest('/api/admins', 'POST', { 
-                name: document.getElementById('new-admin-name').value, 
-                admin_id: document.getElementById('new-admin-id').value, 
-                email: document.getElementById('new-admin-email').value,
-                password: document.getElementById('new-admin-password').value,
-                created_by: currentAdminId
-            });
-            messageEl.textContent = 'Admin created successfully!';
-            messageEl.style.color = '#00ff00';
-            this.reset();
-            populateAdminList();
-        } catch (error) {
-            messageEl.textContent = 'Error: Admin ID might already exist.';
-            messageEl.style.color = '#ff4d4d';
-        }
-    });
-
-    async function populateAdminList() {
-        try {
-            console.log('Fetching admin data...');
-            const admins = await apiRequest('/api/admins');
-            console.log('Admin data received:', admins);
-            
-            const tableBody = document.getElementById('admin-table-body');
-            if (!tableBody) {
-                console.error('Admin table body element not found!');
-                return;
-            }
-            
-            tableBody.innerHTML = '';
-            
-            if (!admins || admins.length === 0) {
-                console.log('No admin data to display');
-                const row = document.createElement('tr');
-                row.innerHTML = '<td colspan="6" style="text-align: center; color: #888;">No admins found</td>';
-                tableBody.appendChild(row);
-                return;
-            }
-            
-            admins.forEach(admin => {
-                console.log('Processing admin:', admin);
-                const row = document.createElement('tr');
-                row.id = `admin-row-${admin.admin_id}`;
-                row.style.backgroundColor = '#2a2a2a';
-                
-                row.innerHTML = `
-                    <td style="color: #FFD700;">${admin.name}</td>
-                    <td style="color: #FFD700;">${admin.admin_id}</td>
-                    <td style="color: #FFD700;">${admin.email || 'N/A'}</td>
-                    <td style="color: #FFD700;">${admin.created_by || 'Unknown'}</td>
-                    <td style="color: #FFD700;">${admin.is_active ? 'Active' : 'Inactive'}</td>
-                    <td class="actions">
-                        <button class="btn action-btn" onclick="toggleAdminStatus('${admin.admin_id}', ${admin.is_active})">${admin.is_active ? 'Deactivate' : 'Activate'}</button>
-                        <button class="btn action-btn delete" onclick="deleteAdmin('${admin.admin_id}')">Delete</button>
-                    </td>`;
-                
-                tableBody.appendChild(row);
-            });
-            
-            console.log(`Successfully populated ${admins.length} admins`);
-        } catch (error) { 
-            console.error("Failed to populate admin list:", error);
-            const tableBody = document.getElementById('admin-table-body');
-            if (tableBody) {
-                tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #ff4d4d;">Error loading admin data</td></tr>';
-            }
-        }
-    }
-
-    async function toggleAdminStatus(adminId, currentStatus) {
-        try {
-            await apiRequest(`/api/admins/${adminId}`, 'PUT', { 
-                is_active: !currentStatus 
-            });
-            populateAdminList();
-        } catch (error) {
-            alert("Error updating admin status: " + error.message);
-        }
-    }
-
-    async function deleteAdmin(adminId) {
-        if (window.confirm(`Are you sure you want to delete admin: ${adminId}?`)) {
-            try {
-                await apiRequest(`/api/admins/${adminId}`, 'DELETE');
-                populateAdminList();
-            } catch (error) {
-                alert("Error deleting admin: " + error.message);
-            }
-        }
-    }
-
     async function populateAdminDashboard() {
         try {
-            console.log('Fetching staff data...');
             currentUsersData = await apiRequest('/api/staff');
-            console.log('Staff data received:', currentUsersData);
-            
             const tableBody = document.getElementById('progress-table-body');
-            if (!tableBody) {
-                console.error('Table body element not found!');
-                return;
-            }
-            
-            console.log('Table body element found:', tableBody);
-            console.log('Table body parent:', tableBody.parentElement);
-            
             tableBody.innerHTML = '';
-            console.log('Table body cleared');
-            
-            if (!currentUsersData || currentUsersData.length === 0) {
-                console.log('No staff data to display');
-                const row = document.createElement('tr');
-                row.innerHTML = '<td colspan="7" style="text-align: center; color: #888;">No staff members found</td>';
-                tableBody.appendChild(row);
-                return;
-            }
-            
             currentUsersData.forEach(user => {
-                console.log('Processing user:', user);
-                
-                // Handle progress field - it might be a string or already an object
-                let progress;
-                if (typeof user.progress === 'string') {
-                    try {
-                        progress = JSON.parse(user.progress || '{}');
-                    } catch (e) {
-                        console.error('Error parsing progress for user', user.staff_id, ':', e);
-                        progress = {};
-                    }
-                } else {
-                    progress = user.progress || {};
-                }
-                
+                const progress = JSON.parse(user.progress || '{}');
                 const completedCount = modules.filter(m => progress[m] === 'completed').length;
                 const progressPercent = Math.round((completedCount / modules.length) * 100);
-                
-                console.log(`User ${user.staff_id}: progress=`, progress, `completed=${completedCount}/${modules.length}`);
-                
                 const row = document.createElement('tr');
                 row.id = `user-row-${user.staff_id}`;
-                row.style.backgroundColor = '#2a2a2a'; // Make sure row is visible
-                
                 // MODIFIED: Updated the row structure to display 'created_by'
                 row.innerHTML = `
-                    <td style="color: #FFD700;">${user.name}</td>
-                    <td style="color: #FFD700;">${user.staff_id}</td>
-                    <td style="color: #FFD700;">${user.email || 'N/A'}</td>
-                    <td style="color: #FFD700;">${user.created_by || 'Unknown'}</td>
-                    <td style="color: #FFD700;">${completedCount}/${modules.length} (${progressPercent}%)</td>
-                    <td style="color: #FFD700;">${user.quiz_score || 'N/A'}</td>
+                    <td>${user.name}</td>
+                    <td>${user.staff_id}</td>
+                    <td>${user.email || 'N/A'}</td>
+                    <td>${user.created_by || 'Unknown'}</td>
+                    <td>${completedCount}/${modules.length} (${progressPercent}%)</td>
+                    <td>${user.quiz_score !== null ? user.quiz_score : 'N/A'}</td>
                     <td class="actions">
                         <button class="btn action-btn" onclick="editUser('${user.staff_id}')">Edit</button>
                         <button class="btn action-btn delete" onclick="deleteUser('${user.staff_id}')">Delete</button>
                     </td>`;
-                
-                console.log('Appending row to table:', row);
                 tableBody.appendChild(row);
-                console.log('Row appended successfully');
             });
-            
-            console.log(`Successfully populated ${currentUsersData.length} staff members`);
-        } catch (error) { 
-            console.error("Failed to populate dashboard:", error);
-            const tableBody = document.getElementById('progress-table-body');
-            if (tableBody) {
-                tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #ff4d4d;">Error loading staff data</td></tr>';
-            }
-        }
+        } catch (error) { console.error("Failed to populate dashboard:", error); }
     }
     
     function editUser(staffId) {
@@ -3670,33 +2671,6 @@
         if (!currentLoggedInUser) return 0;
         return modules.filter(m => currentLoggedInUser.progress[m] === 'completed').length;
     }
-    
-    // Debug function to test API calls
-    async function debugStaffAPI() {
-        console.log('=== DEBUGGING STAFF API ===');
-        try {
-            console.log('1. Testing health endpoint...');
-            const health = await apiRequest('/api/health');
-            console.log('Health check result:', health);
-            
-            console.log('2. Testing staff endpoint...');
-            const staff = await apiRequest('/api/staff');
-            console.log('Staff data:', staff);
-            console.log('Number of staff members:', staff ? staff.length : 'No data');
-            
-            console.log('3. Testing table element...');
-            const tableBody = document.getElementById('progress-table-body');
-            console.log('Table body element:', tableBody);
-            
-            return { health, staff, tableBody };
-        } catch (error) {
-            console.error('Debug API error:', error);
-            return { error: error.message };
-        }
-    }
-    
-    // Make debug function available globally
-    window.debugStaffAPI = debugStaffAPI;
     
     function renderModuleHub() {
         sessionStorage.removeItem('currentPageIndex'); 
@@ -3840,9 +2814,7 @@
         certificateContainer.style.display = 'none';
         submitBtn.style.display = 'block';
 
-        // Use all available questions (no more than 30 for a reasonable assessment)
-        const maxQuestions = Math.min(30, questionBank.length);
-        currentAssesmentQuestions = shuffleArray([...questionBank]).slice(0, maxQuestions);
+        currentAssesmentQuestions = shuffleArray([...questionBank]).slice(0, 50);
 
         let assesmentHTML = '';
         currentAssesmentQuestions.forEach((q, index) => {
@@ -3864,83 +2836,30 @@
 
     async function submitAssesment() {
         let score = 0;
-        let userAnswers = [];
         const questions = document.querySelectorAll('#assesmentArea .question');
-        const totalQuestions = currentAssesmentQuestions.length;
 
         questions.forEach((questionElement, index) => {
             const selectedOption = questionElement.querySelector(`input[name="question${index}"]:checked`);
-            const selectedAnswer = selectedOption ? parseInt(selectedOption.value, 10) : -1;
-            const isCorrect = selectedAnswer === currentAssesmentQuestions[index].correct;
-            
-            userAnswers.push({
-                question: currentAssesmentQuestions[index].q,
-                options: currentAssesmentQuestions[index].a,
-                userAnswer: selectedAnswer,
-                correctAnswer: currentAssesmentQuestions[index].correct,
-                isCorrect: isCorrect
-            });
-
-            if (isCorrect) {
-                score++;
-                questionElement.style.borderColor = '#00ff00';
+            if (selectedOption) {
+                const selectedAnswer = parseInt(selectedOption.value, 10);
+                if (selectedAnswer === currentAssesmentQuestions[index].correct) {
+                    score++;
+                    questionElement.style.borderColor = '#00ff00';
+                } else {
+                    questionElement.style.borderColor = '#ff4d4d';
+                }
             } else {
                 questionElement.style.borderColor = '#ff4d4d';
             }
         });
 
         const resultEl = document.getElementById('assesmentResult');
-        const passingScore = Math.ceil(totalQuestions * 0.8); // 80% passing score
-        const percentage = Math.round((score / totalQuestions) * 100);
-        
-        // Display score and results
-        let resultHTML = `
-            <div style="background: #2a2a2a; padding: 20px; border-radius: 10px; margin: 20px 0;">
-                <h3 style="color: ${score >= passingScore ? '#00ff00' : '#ff4d4d'};">
-                    Your Score: ${score} out of ${totalQuestions} (${percentage}%)
-                </h3>
-                <p style="color: #FFD700;">
-                    ${score >= passingScore ? '🎉 Congratulations! You passed the assessment!' : '❌ You need to score at least ' + passingScore + ' to pass. Please review the training materials and try again.'}
-                </p>
-            </div>
-            
-            <div style="background: #1a1a1a; padding: 20px; border-radius: 10px; margin: 20px 0;">
-                <h4 style="color: #FFD700; margin-bottom: 15px;">📋 Detailed Results:</h4>
-                <div style="max-height: 400px; overflow-y: auto;">
-        `;
-
-        userAnswers.forEach((answer, index) => {
-            const userAnswerText = answer.userAnswer >= 0 ? answer.options[answer.userAnswer] : 'No answer selected';
-            const correctAnswerText = answer.options[answer.correctAnswer];
-            
-            resultHTML += `
-                <div style="margin-bottom: 15px; padding: 10px; background: ${answer.isCorrect ? 'rgba(0, 255, 0, 0.1)' : 'rgba(255, 77, 77, 0.1)'}; border-radius: 5px; border-left: 4px solid ${answer.isCorrect ? '#00ff00' : '#ff4d4d'};">
-                    <p style="color: #FFD700; font-weight: bold; margin-bottom: 8px;">
-                        ${index + 1}. ${answer.question}
-                    </p>
-                    <p style="color: ${answer.isCorrect ? '#00ff00' : '#ff4d4d'}; margin: 5px 0;">
-                        <strong>Your Answer:</strong> ${userAnswerText}
-                    </p>
-                    <p style="color: #00ff00; margin: 5px 0;">
-                        <strong>Correct Answer:</strong> ${correctAnswerText}
-                    </p>
-                    <p style="color: ${answer.isCorrect ? '#00ff00' : '#ff4d4d'}; font-size: 0.9em; margin: 5px 0;">
-                        ${answer.isCorrect ? '✅ Correct' : '❌ Incorrect'}
-                    </p>
-                </div>
-            `;
-        });
-
-        resultHTML += `
-                </div>
-            </div>
-        `;
-
-        resultEl.innerHTML = resultHTML;
+        const passingScore = 1; // Correct passing score
+        resultEl.innerHTML = `<h3>Your Score: ${score} out of 50</h3>`;
 
         try {
-            await apiRequest('/api/progress', 'POST', { staffId: currentLoggedInUser.staff_id, quizScore: `${score} out of ${totalQuestions}` });
-            currentLoggedInUser.quiz_score = `${score} out of ${totalQuestions}`;
+            await apiRequest('/api/progress', 'POST', { staffId: currentLoggedInUser.staff_id, quizScore: `${score} out of 50` });
+            currentLoggedInUser.quiz_score = `${score} out of 50`;
             sessionStorage.setItem('loggedInUser', JSON.stringify(currentLoggedInUser));
         } catch (err) {
             console.error("Failed to update quiz score", err);
