@@ -49,24 +49,42 @@ if (nodemailer) {
                     user: process.env.EMAIL_USER,
                     pass: process.env.EMAIL_PASS
                 },
-                // Additional options for better reliability
+                // Additional options for better reliability and cloud deployment
                 pool: true,
                 maxConnections: 1,
                 rateLimit: 14, // Gmail's limit is 100 emails per day for free accounts
                 rateDelta: 60000, // 1 minute
-                maxMessages: 100
-            });
-            
-            // Test the connection
-            emailTransporter.verify((error, success) => {
-                if (error) {
-                    console.log('❌ Email transporter verification failed:', error.message);
-                    emailTransporter = null;
-                } else {
-                    console.log('✅ Email transporter configured and verified successfully');
-                    console.log(`📧 Email will be sent from: ${process.env.EMAIL_USER}`);
+                maxMessages: 100,
+                // Cloud deployment specific settings
+                connectionTimeout: 60000, // 60 seconds
+                greetingTimeout: 30000,   // 30 seconds
+                socketTimeout: 60000,     // 60 seconds
+                secure: true,
+                tls: {
+                    rejectUnauthorized: false
                 }
             });
+            
+            // Test the connection with timeout handling
+            const verifyPromise = emailTransporter.verify();
+            const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Verification timeout')), 30000)
+            );
+            
+            Promise.race([verifyPromise, timeoutPromise])
+                .then(() => {
+                    console.log('✅ Email transporter configured and verified successfully');
+                    console.log(`📧 Email will be sent from: ${process.env.EMAIL_USER}`);
+                })
+                .catch((error) => {
+                    if (error.message === 'Verification timeout') {
+                        console.log('⚠️  Email verification timed out, but transporter created (will retry on first email)');
+                        console.log(`📧 Email transporter created for: ${process.env.EMAIL_USER}`);
+                    } else {
+                        console.log('❌ Email transporter verification failed:', error.message);
+                        emailTransporter = null;
+                    }
+                });
         }
     } catch (error) {
         console.log('❌ Failed to configure email transporter:', error.message);
@@ -204,7 +222,13 @@ async function sendEmail(to, subject, html) {
         console.log(`📧 Attempting to send email to: ${to}`);
         console.log(`📧 Subject: ${subject}`);
         
-        const result = await emailTransporter.sendMail(mailOptions);
+        // Add timeout for email sending
+        const sendPromise = emailTransporter.sendMail(mailOptions);
+        const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Email sending timeout')), 60000)
+        );
+        
+        const result = await Promise.race([sendPromise, timeoutPromise]);
         console.log(`✅ Email sent successfully to ${to}. Message ID: ${result.messageId}`);
         return { success: true, messageId: result.messageId };
     } catch (error) {
