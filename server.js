@@ -2,6 +2,9 @@
 // YATRI BACKEND SERVER (PostgreSQL)
 // =======================
 
+// Load environment variables
+require('dotenv').config();
+
 const express = require('express');
 const { Pool } = require('pg');
 const cors = require('cors');
@@ -35,18 +38,42 @@ const db = new Pool({
 let emailTransporter = null;
 if (nodemailer) {
     try {
-        emailTransporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: {
-                user: process.env.EMAIL_USER, // Your Gmail address
-                pass: process.env.EMAIL_PASS  // Your Gmail app password
-            }
-        });
-        console.log('Email transporter configured successfully');
+        // Check if email credentials are provided
+        if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+            console.log('⚠️  Email credentials not configured. Set EMAIL_USER and EMAIL_PASS environment variables.');
+            console.log('📧 Email functionality will be disabled.');
+        } else {
+            emailTransporter = nodemailer.createTransport({
+                service: 'gmail',
+                auth: {
+                    user: process.env.EMAIL_USER,
+                    pass: process.env.EMAIL_PASS
+                },
+                // Additional options for better reliability
+                pool: true,
+                maxConnections: 1,
+                rateLimit: 14, // Gmail's limit is 100 emails per day for free accounts
+                rateDelta: 60000, // 1 minute
+                maxMessages: 100
+            });
+            
+            // Test the connection
+            emailTransporter.verify((error, success) => {
+                if (error) {
+                    console.log('❌ Email transporter verification failed:', error.message);
+                    emailTransporter = null;
+                } else {
+                    console.log('✅ Email transporter configured and verified successfully');
+                    console.log(`📧 Email will be sent from: ${process.env.EMAIL_USER}`);
+                }
+            });
+        }
     } catch (error) {
-        console.log('Failed to configure email transporter:', error.message);
+        console.log('❌ Failed to configure email transporter:', error.message);
         emailTransporter = null;
     }
+} else {
+    console.log('❌ Nodemailer not available - email functionality disabled');
 }
 
 // Email templates
@@ -153,12 +180,12 @@ const emailTemplates = {
 async function sendEmail(to, subject, html) {
     try {
         if (!nodemailer || !emailTransporter) {
-            console.log('Nodemailer not available, skipping email send');
+            console.log('❌ Nodemailer not available, skipping email send');
             return { success: false, message: 'Email service not available' };
         }
 
         if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-            console.log('Email credentials not configured, skipping email send');
+            console.log('❌ Email credentials not configured, skipping email send');
             return { success: false, message: 'Email not configured' };
         }
 
@@ -166,14 +193,23 @@ async function sendEmail(to, subject, html) {
             from: `"YATRI Training Portal" <${process.env.EMAIL_USER}>`,
             to: to,
             subject: subject,
-            html: html
+            html: html,
+            // Add headers for better deliverability
+            headers: {
+                'X-Mailer': 'YATRI Training Portal',
+                'X-Priority': '3'
+            }
         };
 
+        console.log(`📧 Attempting to send email to: ${to}`);
+        console.log(`📧 Subject: ${subject}`);
+        
         const result = await emailTransporter.sendMail(mailOptions);
-        console.log('Email sent successfully:', result.messageId);
+        console.log(`✅ Email sent successfully to ${to}. Message ID: ${result.messageId}`);
         return { success: true, messageId: result.messageId };
     } catch (error) {
-        console.error('Email sending error:', error);
+        console.error(`❌ Email sending error for ${to}:`, error.message);
+        console.error('Full error:', error);
         return { success: false, error: error.message };
     }
 }
@@ -236,6 +272,41 @@ initializeDatabase();
 // =======================
 // API ENDPOINTS
 // =======================
+
+// --- Test Email Configuration ---
+app.get('/api/test-email', async (req, res) => {
+    try {
+        const emailStatus = {
+            nodemailerAvailable: !!nodemailer,
+            emailTransporterConfigured: !!emailTransporter,
+            emailCredentialsSet: !!(process.env.EMAIL_USER && process.env.EMAIL_PASS),
+            emailUser: process.env.EMAIL_USER ? `${process.env.EMAIL_USER.substring(0, 3)}***@gmail.com` : 'Not set'
+        };
+
+        // Test email transporter if available
+        if (emailTransporter) {
+            try {
+                await emailTransporter.verify();
+                emailStatus.transporterVerified = true;
+            } catch (error) {
+                emailStatus.transporterVerified = false;
+                emailStatus.verificationError = error.message;
+            }
+        }
+
+        res.json({
+            status: 'success',
+            emailConfiguration: emailStatus,
+            message: emailTransporter ? 'Email service is ready' : 'Email service not configured'
+        });
+    } catch (err) {
+        console.error('Email test error:', err);
+        res.status(500).json({
+            status: 'error',
+            error: err.message
+        });
+    }
+});
 
 // --- Test Database Connection ---
 app.get('/api/test-db', async (req, res) => {
@@ -606,6 +677,13 @@ app.post('/api/broadcast-email', async (req, res) => {
             return res.status(400).json({ error: 'Subject, message, and admin name are required' });
         }
 
+        // Check if email service is available
+        if (!nodemailer || !emailTransporter) {
+            return res.status(400).json({ 
+                error: 'Email service not available. Please check email configuration.' 
+            });
+        }
+
         // Check if email credentials are configured
         if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
             return res.status(400).json({ 
@@ -625,7 +703,9 @@ app.post('/api/broadcast-email', async (req, res) => {
             });
         }
 
-        console.log(`Broadcasting email to ${staffEmails.length} staff members`);
+        console.log(`📧 Broadcasting email to ${staffEmails.length} staff members`);
+        console.log(`📧 Subject: ${subject}`);
+        console.log(`📧 From: ${adminName}`);
 
         // Send emails to all staff
         const emailTemplate = emailTemplates.broadcastEmail(subject, message, adminName);
