@@ -194,8 +194,10 @@ const emailTemplates = {
     })
 };
 
-// Email sending function
-async function sendEmail(to, subject, html) {
+// Email sending function with retry mechanism
+async function sendEmail(to, subject, html, retryCount = 0) {
+    const maxRetries = 3;
+    
     try {
         if (!nodemailer || !emailTransporter) {
             console.log('❌ Nodemailer not available, skipping email send');
@@ -207,33 +209,91 @@ async function sendEmail(to, subject, html) {
             return { success: false, message: 'Email not configured' };
         }
 
+        // Recreate transporter for each attempt to avoid stale connections
+        let transporter;
+        
+        // Try different configurations for cloud hosting
+        if (process.env.NODE_ENV === 'production') {
+            // Production configuration optimized for Render.com
+            transporter = nodemailer.createTransport({
+                host: 'smtp.gmail.com',
+                port: 587,
+                secure: false, // Use STARTTLS
+                auth: {
+                    user: process.env.EMAIL_USER,
+                    pass: process.env.EMAIL_PASS
+                },
+                connectionTimeout: 15000, // 15 seconds
+                greetingTimeout: 10000,   // 10 seconds
+                socketTimeout: 15000,     // 15 seconds
+                tls: {
+                    rejectUnauthorized: false,
+                    ciphers: 'SSLv3'
+                },
+                pool: false,
+                maxConnections: 1,
+                rateLimit: 5
+            });
+        } else {
+            // Development configuration
+            transporter = nodemailer.createTransport({
+                service: 'gmail',
+                auth: {
+                    user: process.env.EMAIL_USER,
+                    pass: process.env.EMAIL_PASS
+                },
+                connectionTimeout: 30000,
+                greetingTimeout: 15000,
+                socketTimeout: 30000,
+                secure: true,
+                tls: {
+                    rejectUnauthorized: false
+                },
+                pool: false
+            });
+        }
+
         const mailOptions = {
             from: `"YATRI Training Portal" <${process.env.EMAIL_USER}>`,
             to: to,
             subject: subject,
             html: html,
-            // Add headers for better deliverability
             headers: {
                 'X-Mailer': 'YATRI Training Portal',
                 'X-Priority': '3'
             }
         };
 
-        console.log(`📧 Attempting to send email to: ${to}`);
+        console.log(`📧 Attempting to send email to: ${to} (attempt ${retryCount + 1}/${maxRetries + 1})`);
         console.log(`📧 Subject: ${subject}`);
         
-        // Add timeout for email sending
-        const sendPromise = emailTransporter.sendMail(mailOptions);
+        // Shorter timeout for cloud environments
+        const sendPromise = transporter.sendMail(mailOptions);
         const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Email sending timeout')), 60000)
+            setTimeout(() => reject(new Error('Email sending timeout')), 20000) // 20 seconds
         );
         
         const result = await Promise.race([sendPromise, timeoutPromise]);
+        
+        // Close the transporter
+        transporter.close();
+        
         console.log(`✅ Email sent successfully to ${to}. Message ID: ${result.messageId}`);
         return { success: true, messageId: result.messageId };
+        
     } catch (error) {
-        console.error(`❌ Email sending error for ${to}:`, error.message);
-        console.error('Full error:', error);
+        console.error(`❌ Email sending error for ${to} (attempt ${retryCount + 1}):`, error.message);
+        
+        // Retry with exponential backoff
+        if (retryCount < maxRetries) {
+            const delay = Math.pow(2, retryCount) * 1000; // 1s, 2s, 4s
+            console.log(`⏳ Retrying email send in ${delay}ms...`);
+            
+            await new Promise(resolve => setTimeout(resolve, delay));
+            return await sendEmail(to, subject, html, retryCount + 1);
+        }
+        
+        console.error(`❌ Email sending failed after ${maxRetries + 1} attempts for ${to}`);
         return { success: false, error: error.message };
     }
 }
@@ -296,6 +356,40 @@ initializeDatabase();
 // =======================
 // API ENDPOINTS
 // =======================
+
+// --- Manual Email Send Endpoint (Fallback) ---
+app.post('/api/send-email-manual', async (req, res) => {
+    try {
+        const { to, subject, message } = req.body;
+        
+        if (!to || !subject || !message) {
+            return res.status(400).json({ error: 'To, subject, and message are required' });
+        }
+        
+        const html = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #1a1a1a; color: #FFD700; padding: 20px; border-radius: 10px;">
+                <h1 style="color: #FFD700; text-align: center;">YATRI Training Portal</h1>
+                <div style="background: #2a2a2a; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                    <div style="color: #E0E0E0; line-height: 1.6;">
+                        ${message.replace(/\n/g, '<br>')}
+                    </div>
+                </div>
+                <p style="color: #888; text-align: center;">© 2025 YATRI Indian Restaurant</p>
+            </div>
+        `;
+        
+        const result = await sendEmail(to, subject, html);
+        
+        if (result.success) {
+            res.json({ success: true, message: 'Email sent successfully', messageId: result.messageId });
+        } else {
+            res.status(500).json({ success: false, error: result.error });
+        }
+    } catch (error) {
+        console.error('Manual email send error:', error);
+        res.status(500).json({ error: 'Failed to send email' });
+    }
+});
 
 // --- Test Email Configuration ---
 app.get('/api/test-email', async (req, res) => {
@@ -541,18 +635,20 @@ app.post('/api/staff', async (req, res) => {
         console.log(`Staff member created successfully with ID: ${result.rows[0].id}`);
         client.release();
         
-        // Send welcome email
+        // Send welcome email with fallback
         if (email && process.env.EMAIL_USER && process.env.EMAIL_PASS) {
             const emailTemplate = emailTemplates.welcomeEmail(name, staff_id, password);
             const emailResult = await sendEmail(email, emailTemplate.subject, emailTemplate.html);
             
             if (emailResult.success) {
-                console.log(`Welcome email sent to ${email}`);
+                console.log(`✅ Welcome email sent to ${email}`);
             } else {
-                console.log(`Failed to send welcome email to ${email}:`, emailResult.error);
+                console.log(`❌ Failed to send welcome email to ${email}:`, emailResult.error);
+                console.log(`📝 Staff member created successfully, but email will need to be sent manually`);
+                console.log(`📧 Email details: To: ${email}, Subject: ${emailTemplate.subject}`);
             }
         } else if (email) {
-            console.log(`Email credentials not configured - skipping welcome email to ${email}`);
+            console.log(`⚠️ Email credentials not configured - skipping welcome email to ${email}`);
         }
         
         res.json({ success: true, id: result.rows[0].id, emailSent: email ? true : false });
@@ -731,28 +827,37 @@ app.post('/api/broadcast-email', async (req, res) => {
         console.log(`📧 Subject: ${subject}`);
         console.log(`📧 From: ${adminName}`);
 
-        // Send emails to all staff
+        // Send emails to all staff with improved error handling
         const emailTemplate = emailTemplates.broadcastEmail(subject, message, adminName);
-        const emailPromises = staffEmails.map(async (staff) => {
+        
+        console.log(`📧 Starting broadcast email to ${staffEmails.length} recipients...`);
+        
+        // Process emails sequentially to avoid overwhelming the server
+        const results = [];
+        for (const staff of staffEmails) {
             try {
+                console.log(`📧 Sending to ${staff.name} (${staff.email})...`);
                 const result = await sendEmail(staff.email, emailTemplate.subject, emailTemplate.html);
-                return { 
+                results.push({ 
                     email: staff.email, 
                     name: staff.name, 
                     success: result.success,
                     error: result.error 
-                };
+                });
+                
+                // Small delay between emails to avoid rate limiting
+                await new Promise(resolve => setTimeout(resolve, 1000));
             } catch (error) {
-                return { 
+                console.error(`❌ Error sending to ${staff.email}:`, error.message);
+                results.push({ 
                     email: staff.email, 
                     name: staff.name, 
                     success: false, 
                     error: error.message 
-                };
+                });
             }
-        });
-
-        const results = await Promise.all(emailPromises);
+        }
+        
         const successful = results.filter(r => r.success).length;
         const failed = results.filter(r => !r.success);
 
