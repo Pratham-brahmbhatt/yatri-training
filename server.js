@@ -62,18 +62,6 @@ async function initializeDatabase() {
             )
         `);
         
-        await client.query(`
-            CREATE TABLE IF NOT EXISTS blog_posts (
-                id SERIAL PRIMARY KEY,
-                title TEXT NOT NULL,
-                content TEXT NOT NULL,
-                image_url TEXT,
-                author_name TEXT NOT NULL,
-                author_staff_id TEXT NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        `);
         
         // Create default admin if no admins exist
         const adminCheck = await client.query('SELECT COUNT(*) FROM admins');
@@ -101,70 +89,6 @@ initializeDatabase();
 // API ENDPOINTS
 // =======================
 
-// --- Blog Posts API ---
-app.get('/api/blog-posts', async (req, res) => {
-    try {
-        const result = await db.query(`
-            SELECT id, title, content, image_url, author_name, author_staff_id, 
-                   created_at, updated_at 
-            FROM blog_posts 
-            ORDER BY created_at DESC
-        `);
-        res.json(result.rows);
-    } catch (err) {
-        console.error('Get blog posts error:', err);
-        res.status(500).json({ error: err.message });
-    }
-});
-
-app.post('/api/blog-posts', async (req, res) => {
-    try {
-        const { title, content, image_url, author_name, author_staff_id } = req.body;
-        
-        if (!title || !content || !author_name || !author_staff_id) {
-            return res.status(400).json({ error: 'Title, content, author name, and staff ID are required' });
-        }
-        
-        const result = await db.query(`
-            INSERT INTO blog_posts (title, content, image_url, author_name, author_staff_id) 
-            VALUES ($1, $2, $3, $4, $5) 
-            RETURNING id, created_at
-        `, [title, content, image_url, author_name, author_staff_id]);
-        
-        res.json({ success: true, id: result.rows[0].id, created_at: result.rows[0].created_at });
-    } catch (err) {
-        console.error('Create blog post error:', err);
-        res.status(500).json({ error: err.message });
-    }
-});
-
-app.put('/api/blog-posts/:id', async (req, res) => {
-    try {
-        const { title, content, image_url } = req.body;
-        const { id } = req.params;
-        
-        const result = await db.query(`
-            UPDATE blog_posts 
-            SET title = $1, content = $2, image_url = $3, updated_at = CURRENT_TIMESTAMP 
-            WHERE id = $4
-        `, [title, content, image_url, id]);
-        
-        res.json({ success: true, changes: result.rowCount });
-    } catch (err) {
-        console.error('Update blog post error:', err);
-        res.status(500).json({ error: err.message });
-    }
-});
-
-app.delete('/api/blog-posts/:id', async (req, res) => {
-    try {
-        const result = await db.query('DELETE FROM blog_posts WHERE id = $1', [req.params.id]);
-        res.json({ success: true, changes: result.rowCount });
-    } catch (err) {
-        console.error('Delete blog post error:', err);
-        res.status(500).json({ error: err.message });
-    }
-});
 
 // --- Test Database Connection ---
 app.get('/api/test-db', async (req, res) => {
