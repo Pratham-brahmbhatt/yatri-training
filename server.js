@@ -10,14 +10,6 @@ const { Pool } = require('pg');
 const cors = require('cors');
 const bcrypt = require('bcrypt');
 const path = require('path');
-// Email functionality - optional dependency
-let nodemailer;
-try {
-    nodemailer = require('nodemailer');
-} catch (error) {
-    console.log('Nodemailer not installed - email functionality disabled');
-    nodemailer = null;
-}
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -34,171 +26,8 @@ const db = new Pool({
     ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
-// Email configuration
-let emailTransporter = null;
-if (nodemailer) {
-    try {
-        // Check if email credentials are provided
-        if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-            console.log('⚠️  Email credentials not configured. Set EMAIL_USER and EMAIL_PASS environment variables.');
-            console.log('📧 Email functionality will be disabled.');
-        } else {
-            // Simple, reliable Gmail configuration
-            emailTransporter = nodemailer.createTransport({
-                service: 'gmail',
-                auth: {
-                    user: process.env.EMAIL_USER,
-                    pass: process.env.EMAIL_PASS
-                },
-                tls: {
-                    rejectUnauthorized: false
-                }
-            });
-            
-            console.log('✅ Email transporter configured successfully');
-            console.log(`📧 Email will be sent from: ${process.env.EMAIL_USER}`);
-        }
-    } catch (error) {
-        console.log('❌ Failed to configure email transporter:', error.message);
-        emailTransporter = null;
-    }
-} else {
-    console.log('❌ Nodemailer not available - email functionality disabled');
-}
 
-// Email templates
-const emailTemplates = {
-    welcomeEmail: (staffName, staffId, password) => ({
-        subject: '🎉 Welcome to YATRI Training Portal!',
-        html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #1a1a1a; color: #FFD700; padding: 20px; border-radius: 10px;">
-                <div style="text-align: center; margin-bottom: 30px;">
-                    <h1 style="color: #FFD700; margin: 0;">YATRI</h1>
-                    <h2 style="color: #E0E0E0; margin: 10px 0;">Staff Training Portal</h2>
-                </div>
-                
-                <div style="background: #2a2a2a; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-                    <h3 style="color: #FFD700; margin-top: 0;">Welcome to the YATRI Family, ${staffName}!</h3>
-                    <p style="color: #E0E0E0; line-height: 1.6;">
-                        We're excited to have you join our team! Your training account has been created and you can now access our comprehensive training modules.
-                    </p>
-                </div>
-                
-                <div style="background: #2a2a2a; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-                    <h4 style="color: #FFD700; margin-top: 0;">Your Login Credentials:</h4>
-                    <p style="color: #E0E0E0; margin: 5px 0;"><strong>Staff ID:</strong> ${staffId}</p>
-                    <p style="color: #E0E0E0; margin: 5px 0;"><strong>Password:</strong> ${password}</p>
-                    <p style="color: #ff4d4d; font-size: 0.9em; margin-top: 10px;">
-                        ⚠️ Please change your password after your first login for security.
-                    </p>
-                </div>
-                
-                <div style="text-align: center; margin: 30px 0;">
-                    <a href="https://yatri-training.onrender.com" 
-                       style="background: linear-gradient(135deg, #FFD700 0%, #e6b800 100%); 
-                              color: #000; 
-                              padding: 15px 30px; 
-                              text-decoration: none; 
-                              border-radius: 8px; 
-                              font-weight: bold; 
-                              display: inline-block;">
-                        🚀 Start Your Training
-                    </a>
-                </div>
-                
-                <div style="background: #2a2a2a; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-                    <h4 style="color: #FFD700; margin-top: 0;">What's Next?</h4>
-                    <ul style="color: #E0E0E0; line-height: 1.8;">
-                        <li>Complete all 9 training modules</li>
-                        <li>Pass the final assessment (80% required)</li>
-                        <li>Receive your completion certificate</li>
-                        <li>Start your journey with YATRI!</li>
-                    </ul>
-                </div>
-                
-                <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #444;">
-                    <p style="color: #888; font-size: 0.9em; margin: 0;">
-                        © 2025 YATRI Indian Restaurant. All rights reserved.
-                    </p>
-                </div>
-            </div>
-        `
-    }),
-    
-    broadcastEmail: (subject, message, adminName) => ({
-        subject: subject,
-        html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #1a1a1a; color: #FFD700; padding: 20px; border-radius: 10px;">
-                <div style="text-align: center; margin-bottom: 30px;">
-                    <h1 style="color: #FFD700; margin: 0;">YATRI</h1>
-                    <h2 style="color: #E0E0E0; margin: 10px 0;">Staff Training Portal</h2>
-                </div>
-                
-                <div style="background: #2a2a2a; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-                    <div style="color: #E0E0E0; line-height: 1.6;">
-                        ${message.replace(/\n/g, '<br>')}
-                    </div>
-                </div>
-                
-                <div style="text-align: center; margin: 30px 0;">
-                    <a href="https://yatri-training.onrender.com" 
-                       style="background: linear-gradient(135deg, #FFD700 0%, #e6b800 100%); 
-                              color: #000; 
-                              padding: 15px 30px; 
-                              text-decoration: none; 
-                              border-radius: 8px; 
-                              font-weight: bold; 
-                              display: inline-block;">
-                        🔗 Access Training Portal
-                    </a>
-                </div>
-                
-                <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #444;">
-                    <p style="color: #888; font-size: 0.9em; margin: 5px 0;">
-                        Message sent by: ${adminName}
-                    </p>
-                    <p style="color: #888; font-size: 0.9em; margin: 0;">
-                        © 2025 YATRI Indian Restaurant. All rights reserved.
-                    </p>
-                </div>
-            </div>
-        `
-    })
-};
 
-// Simplified email sending function
-async function sendEmail(to, subject, html) {
-    try {
-        if (!nodemailer || !emailTransporter) {
-            console.log('❌ Nodemailer not available, skipping email send');
-            return { success: false, message: 'Email service not available' };
-        }
-
-        if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-            console.log('❌ Email credentials not configured, skipping email send');
-            return { success: false, message: 'Email not configured' };
-        }
-
-        const mailOptions = {
-            from: `"YATRI Training Portal" <${process.env.EMAIL_USER}>`,
-            to: to,
-            subject: subject,
-            html: html
-        };
-
-        console.log(`📧 Sending email to: ${to}`);
-        console.log(`📧 Subject: ${subject}`);
-        
-        const result = await emailTransporter.sendMail(mailOptions);
-        
-        console.log(`✅ Email sent successfully to ${to}. Message ID: ${result.messageId}`);
-        return { success: true, messageId: result.messageId };
-        
-    } catch (error) {
-        console.error(`❌ Email sending error for ${to}:`, error.message);
-        return { success: false, error: error.message };
-    }
-}
 
 // Initialize database
 async function initializeDatabase() {
@@ -233,6 +62,19 @@ async function initializeDatabase() {
             )
         `);
         
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS blog_posts (
+                id SERIAL PRIMARY KEY,
+                title TEXT NOT NULL,
+                content TEXT NOT NULL,
+                image_url TEXT,
+                author_name TEXT NOT NULL,
+                author_staff_id TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        
         // Create default admin if no admins exist
         const adminCheck = await client.query('SELECT COUNT(*) FROM admins');
         if (parseInt(adminCheck.rows[0].count) === 0) {
@@ -259,72 +101,68 @@ initializeDatabase();
 // API ENDPOINTS
 // =======================
 
-// --- Manual Email Send Endpoint (Fallback) ---
-app.post('/api/send-email-manual', async (req, res) => {
+// --- Blog Posts API ---
+app.get('/api/blog-posts', async (req, res) => {
     try {
-        const { to, subject, message } = req.body;
-        
-        if (!to || !subject || !message) {
-            return res.status(400).json({ error: 'To, subject, and message are required' });
-        }
-        
-        const html = `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #1a1a1a; color: #FFD700; padding: 20px; border-radius: 10px;">
-                <h1 style="color: #FFD700; text-align: center;">YATRI Training Portal</h1>
-                <div style="background: #2a2a2a; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-                    <div style="color: #E0E0E0; line-height: 1.6;">
-                        ${message.replace(/\n/g, '<br>')}
-                    </div>
-                </div>
-                <p style="color: #888; text-align: center;">© 2025 YATRI Indian Restaurant</p>
-            </div>
-        `;
-        
-        const result = await sendEmail(to, subject, html);
-        
-        if (result.success) {
-            res.json({ success: true, message: 'Email sent successfully', messageId: result.messageId });
-        } else {
-            res.status(500).json({ success: false, error: result.error });
-        }
-    } catch (error) {
-        console.error('Manual email send error:', error);
-        res.status(500).json({ error: 'Failed to send email' });
+        const result = await db.query(`
+            SELECT id, title, content, image_url, author_name, author_staff_id, 
+                   created_at, updated_at 
+            FROM blog_posts 
+            ORDER BY created_at DESC
+        `);
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Get blog posts error:', err);
+        res.status(500).json({ error: err.message });
     }
 });
 
-// --- Test Email Configuration ---
-app.get('/api/test-email', async (req, res) => {
+app.post('/api/blog-posts', async (req, res) => {
     try {
-        const emailStatus = {
-            nodemailerAvailable: !!nodemailer,
-            emailTransporterConfigured: !!emailTransporter,
-            emailCredentialsSet: !!(process.env.EMAIL_USER && process.env.EMAIL_PASS),
-            emailUser: process.env.EMAIL_USER ? `${process.env.EMAIL_USER.substring(0, 3)}***@gmail.com` : 'Not set'
-        };
-
-        // Test email transporter if available
-        if (emailTransporter) {
-            try {
-                await emailTransporter.verify();
-                emailStatus.transporterVerified = true;
-            } catch (error) {
-                emailStatus.transporterVerified = false;
-                emailStatus.verificationError = error.message;
-            }
+        const { title, content, image_url, author_name, author_staff_id } = req.body;
+        
+        if (!title || !content || !author_name || !author_staff_id) {
+            return res.status(400).json({ error: 'Title, content, author name, and staff ID are required' });
         }
-
-        res.json({
-            status: 'success',
-            emailConfiguration: emailStatus,
-            message: emailTransporter ? 'Email service is ready' : 'Email service not configured'
-        });
+        
+        const result = await db.query(`
+            INSERT INTO blog_posts (title, content, image_url, author_name, author_staff_id) 
+            VALUES ($1, $2, $3, $4, $5) 
+            RETURNING id, created_at
+        `, [title, content, image_url, author_name, author_staff_id]);
+        
+        res.json({ success: true, id: result.rows[0].id, created_at: result.rows[0].created_at });
     } catch (err) {
-        console.error('Email test error:', err);
-        res.status(500).json({
-            status: 'error',
-            error: err.message
-        });
+        console.error('Create blog post error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.put('/api/blog-posts/:id', async (req, res) => {
+    try {
+        const { title, content, image_url } = req.body;
+        const { id } = req.params;
+        
+        const result = await db.query(`
+            UPDATE blog_posts 
+            SET title = $1, content = $2, image_url = $3, updated_at = CURRENT_TIMESTAMP 
+            WHERE id = $4
+        `, [title, content, image_url, id]);
+        
+        res.json({ success: true, changes: result.rowCount });
+    } catch (err) {
+        console.error('Update blog post error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.delete('/api/blog-posts/:id', async (req, res) => {
+    try {
+        const result = await db.query('DELETE FROM blog_posts WHERE id = $1', [req.params.id]);
+        res.json({ success: true, changes: result.rowCount });
+    } catch (err) {
+        console.error('Delete blog post error:', err);
+        res.status(500).json({ error: err.message });
     }
 });
 
@@ -537,23 +375,7 @@ app.post('/api/staff', async (req, res) => {
         console.log(`Staff member created successfully with ID: ${result.rows[0].id}`);
         client.release();
         
-        // Send welcome email with fallback
-        if (email && process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-            const emailTemplate = emailTemplates.welcomeEmail(name, staff_id, password);
-            const emailResult = await sendEmail(email, emailTemplate.subject, emailTemplate.html);
-            
-            if (emailResult.success) {
-                console.log(`✅ Welcome email sent to ${email}`);
-            } else {
-                console.log(`❌ Failed to send welcome email to ${email}:`, emailResult.error);
-                console.log(`📝 Staff member created successfully, but email will need to be sent manually`);
-                console.log(`📧 Email details: To: ${email}, Subject: ${emailTemplate.subject}`);
-            }
-        } else if (email) {
-            console.log(`⚠️ Email credentials not configured - skipping welcome email to ${email}`);
-        }
-        
-        res.json({ success: true, id: result.rows[0].id, emailSent: email ? true : false });
+        res.json({ success: true, id: result.rows[0].id });
     } catch (err) {
         console.error('Create staff error:', err);
         console.error('Error details:', {
@@ -690,94 +512,6 @@ app.delete('/api/admins/:admin_id', async (req, res) => {
     }
 });
 
-// --- Broadcast Email ---
-app.post('/api/broadcast-email', async (req, res) => {
-    try {
-        const { subject, message, adminName } = req.body;
-        
-        if (!subject || !message || !adminName) {
-            return res.status(400).json({ error: 'Subject, message, and admin name are required' });
-        }
-
-        // Check if email service is available
-        if (!nodemailer || !emailTransporter) {
-            return res.status(400).json({ 
-                error: 'Email service not available. Please check email configuration.' 
-            });
-        }
-
-        // Check if email credentials are configured
-        if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-            return res.status(400).json({ 
-                error: 'Email credentials not configured. Please set EMAIL_USER and EMAIL_PASS environment variables.' 
-            });
-        }
-
-        // Get all staff emails
-        const staffResult = await db.query('SELECT email, name FROM staff WHERE email IS NOT NULL AND email != \'\'');
-        const staffEmails = staffResult.rows;
-
-        if (staffEmails.length === 0) {
-            return res.json({ 
-                success: true, 
-                message: 'No staff members with email addresses found',
-                emailsSent: 0 
-            });
-        }
-
-        console.log(`📧 Broadcasting email to ${staffEmails.length} staff members`);
-        console.log(`📧 Subject: ${subject}`);
-        console.log(`📧 From: ${adminName}`);
-
-        // Send emails to all staff with improved error handling
-        const emailTemplate = emailTemplates.broadcastEmail(subject, message, adminName);
-        
-        console.log(`📧 Starting broadcast email to ${staffEmails.length} recipients...`);
-        
-        // Process emails sequentially to avoid overwhelming the server
-        const results = [];
-        for (const staff of staffEmails) {
-            try {
-                console.log(`📧 Sending to ${staff.name} (${staff.email})...`);
-                const result = await sendEmail(staff.email, emailTemplate.subject, emailTemplate.html);
-                results.push({ 
-                    email: staff.email, 
-                    name: staff.name, 
-                    success: result.success,
-                    error: result.error 
-                });
-                
-                // Small delay between emails to avoid rate limiting
-                await new Promise(resolve => setTimeout(resolve, 1000));
-            } catch (error) {
-                console.error(`❌ Error sending to ${staff.email}:`, error.message);
-                results.push({ 
-                    email: staff.email, 
-                    name: staff.name, 
-                    success: false, 
-                    error: error.message 
-                });
-            }
-        }
-        
-        const successful = results.filter(r => r.success).length;
-        const failed = results.filter(r => !r.success);
-
-        console.log(`Broadcast complete: ${successful} successful, ${failed.length} failed`);
-
-        res.json({
-            success: true,
-            totalRecipients: staffEmails.length,
-            emailsSent: successful,
-            emailsFailed: failed.length,
-            failedEmails: failed
-        });
-
-    } catch (err) {
-        console.error('Broadcast email error:', err);
-        res.status(500).json({ error: 'Server error while sending broadcast email' });
-    }
-});
 
 // --- Update Progress / Quiz Score ---
 app.post('/api/progress', async (req, res) => {
